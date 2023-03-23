@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include "items.h"
+#include "exceptions.h"
 
 
 typedef enum
@@ -24,6 +25,7 @@ typedef struct
     Effect *effects;
     Item *inventory;
     Slot *equipped_slots;
+    float miss_chance;
     char *name;
     int lvl;
     int kills;
@@ -34,7 +36,7 @@ typedef struct
 
 
 // void pick_up(Unit *unit, Cell cell);
-void attack(Unit *attacker, Unit *defender);
-void take_damage(Unit *unit, int damage);
-void use(Unit *unit, Item item);
-void equip(Unit *unit, Item item);
+ExceptionStatus attack(Unit *attacker, Unit *defender);
+ExceptionStatus take_damage(Unit *unit, int damage);
+ExceptionStatus use(Unit *unit, Item *item);
+ExceptionStatus equip(Unit *unit, Item item);
