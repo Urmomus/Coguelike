@@ -25,11 +25,7 @@ int main(void)
 			fprintf(f_out, "%d\n", game_map.data[i][j].type);
 	
 	fclose(f_out);
-	
-	
-	for (int i = 0; i < game_map.size_y; ++i)
-		free(game_map.data[i]);
-	free(game_map.data);
+	delete_map(&game_map);
 	
 	return err_code;
 };

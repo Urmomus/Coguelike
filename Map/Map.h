@@ -22,3 +22,15 @@ typedef struct
  * @return код ошибки
  */
 int generate_maps_landscape(GameMap *game_map);
+
+int place_objects_on_map(GameMap *game_map);
+
+int renew_map_state(GameMap *game_map);
+
+int game_is_finished(GameMap *game_map);
+
+int get_map_state(GameMap *game_map);
+
+int set_map_state(GameMap *game_map);
+
+int delete_map(GameMap *game_map);

@@ -4,23 +4,14 @@
 //#include "Items.h"
 
 // описывает возможные типы клеток
+
+#include "Object.h"
+
 enum CellType
 {
 	FREE_CELL, // проходимая клетка
 	WALL_CELL, // непроходимая клетка (стена)
 };
-
-enum ObjectTypes
-{
-	ITEM,		// предмет
-	UNIT,		// существо
-};
-
-typedef struct 
-{
-	void *data;		// указатель на предмет / моба
-	char type;		// элемент из ObjectTypes
-} Object;
 
 // класс, описывающий одну клетку (Cell) игрового поля
 typedef struct
