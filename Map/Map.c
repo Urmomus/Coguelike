@@ -61,6 +61,9 @@ int _copy_map(GameMap *game_map_1, GameMap *game_map_2)
 	int size_x = game_map_1 -> size_x;
 	int size_y = game_map_1 -> size_y;
 	
+	game_map_2 ->  size_x = size_x;
+	game_map_2 ->  size_y = size_y;
+	
 	game_map_2 -> data = malloc(sizeof(Cell) * size_y);
 	for (int i = 0; i < size_y; ++i)
 	{
@@ -89,7 +92,6 @@ int _next_state(GameMap *game_map)
 {    
 	GameMap tmp;
 	_copy_map(game_map, &tmp);
-	
     for (int x = 0; x < game_map -> size_x; ++x)
 		for (int y = 0; y < game_map -> size_y; ++y)
 		{
@@ -118,6 +120,7 @@ int _next_state(GameMap *game_map)
 				};
 			};
          };
+    delete_map(game_map);
     _copy_map(&tmp, game_map);
     delete_map(&tmp);
 	return 0;
