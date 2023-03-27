@@ -5,6 +5,10 @@
 // если имя функции начинается с нижнего подчёркивания, то она исключительно внутрифайловая,
 // то есть, выставлять её прототип в .h я не буду
 
+enum Errors			// возможные ошибки
+{
+	SIZE_ERROR,			// размеры карт при копировании не совпадают
+};
 
 // структура-контейнер для настроек компиляции
 typedef struct
@@ -13,9 +17,10 @@ typedef struct
 	int death_limit; 		// рекомендую задавать в 3
 	int birth_limit; 		// рекомендую задавать в 4
 	int steps;				// сколько раз карта будет обновлять своё состояние (обычно хватает 2-5 раз)
-} Settings;	
+} 
+LandsapeSettings;	
 
-Settings _std_settings = {36, 3, 4, 5};
+LandsapeSettings _std_settings = {36, 3, 4, 5};
 
 /**
  * @brief считает кол-во стен вокруг клетки
@@ -56,29 +61,37 @@ int _cnt_neighbours(GameMap *game_map, int x, int y, int *result)
     return 0;
 };
 
-int _copy_map(GameMap *game_map_1, GameMap *game_map_2)
+int _copy_map(GameMap *from, GameMap *to)
 {
-	int size_x = game_map_1 -> size_x;
-	int size_y = game_map_1 -> size_y;
+	if ((from -> size_x != to -> size_x) || (from -> size_y != to -> size_y))
+		return SIZE_ERROR;
 	
-	game_map_2 ->  size_x = size_x;
-	game_map_2 ->  size_y = size_y;
+	for (int i = 0; i < from -> size_y; ++i)
+		for (int j = 0; j < from -> size_x; ++j)
+			to -> data[i][j] = from -> data[i][j];
 	
-	game_map_2 -> data = malloc(sizeof(Cell) * size_y);
-	for (int i = 0; i < size_y; ++i)
-	{
-		game_map_2 -> data[i] = malloc(sizeof(Cell) * size_x);
-		for (int j = 0; j < size_x; ++j)
-			game_map_2 -> data[i][j] = game_map_1 -> data[i][j];
-	};
 	return 0;
 };
 
 int delete_map(GameMap *game_map)
-{
+{	
 	for (int i = 0; i < game_map -> size_y; ++i)
 		free(game_map -> data[i]);
 	free(game_map -> data);
+	
+	return 0;
+};
+
+int init_map(GameMap *game_map, MapSettings settings)
+{
+	
+	game_map -> size_x = settings.size_x;
+	game_map -> size_y = settings.size_y;
+	
+	// выделяем память под размеры карты
+	game_map -> data = malloc(sizeof(Cell*) * game_map -> size_y);
+	for (int i = 0; i < game_map -> size_y; ++i)
+		game_map -> data[i] = malloc(sizeof(Cell) * game_map -> size_x);
 };
 
 /**
@@ -91,13 +104,20 @@ int delete_map(GameMap *game_map)
 int _next_state(GameMap *game_map)
 {    
 	GameMap tmp;
+	
+	MapSettings tmp_settings;
+	tmp_settings.size_x = game_map -> size_x;
+	tmp_settings.size_y = game_map -> size_y;
+	init_map(&tmp, tmp_settings);
+	
 	_copy_map(game_map, &tmp);
+	
     for (int x = 0; x < game_map -> size_x; ++x)
 		for (int y = 0; y < game_map -> size_y; ++y)
 		{
 			int neighbours;
             _cnt_neighbours(game_map, x, y, &neighbours);
-            if(game_map -> data[x][y].type == FREE_CELL)
+            if(game_map -> data[x][y].type == WALL_CELL)
             {
                 if (neighbours < _std_settings.death_limit)
 				{	
@@ -120,7 +140,7 @@ int _next_state(GameMap *game_map)
 				};
 			};
          };
-    delete_map(game_map);
+         
     _copy_map(&tmp, game_map);
     delete_map(&tmp);
 	return 0;

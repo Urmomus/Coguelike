@@ -7,13 +7,13 @@ int main(void)
 {
 	GameMap game_map;
 	
+	MapSettings settings;
+	settings.size_x = 100;
+	settings.size_y = 100;
+	
 	// пока нет функций -- зададим вручную
-	game_map.size_x = 25;
-	game_map.size_y = 25;
-	game_map.data = malloc(sizeof(Cell) * game_map.size_y);
-	for (int i = 0; i < game_map.size_y; ++i)
-		game_map.data[i] = malloc(sizeof(Cell) * game_map.size_x);
-		
+	init_map(&game_map, settings);
+	
 	int err_code = generate_maps_landscape(&game_map);
 	
 	char *filename = "test_map.txt";
