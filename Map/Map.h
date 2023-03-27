@@ -1,8 +1,6 @@
 // сия библиотека описывает глобальную карту, где происходит действие игры
 
 #include "Cell.h"
-//#include "Items.h"
-//#include "Units.h"
 
 typedef struct
 {
