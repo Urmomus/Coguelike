@@ -30,16 +30,32 @@ typedef struct
  */
 int generate_maps_landscape(GameMap *game_map);
 
+// TODO
 int place_objects_on_map(GameMap *game_map);
 
+// TODO
 int renew_map_state(GameMap *game_map);
 
+// TODO
 int game_is_finished(GameMap *game_map);
 
+// TODO
 int get_map_state(GameMap *game_map);
 
+// TODO
 int set_map_state(GameMap *game_map);
 
+/**
+ * @brief создаёт карту, выделяет память и задаёт некоторые стартовые параметры (см. в settings)
+ * @param game_map указатель на игровую карту, которую надо инициализировать
+ * @param settings параметры создаваемой карты
+ * @return код ошибки
+ */
 int init_map(GameMap *game_map, MapSettings settings);
 
+/**
+ * @brief чистит память, которую занимает карта
+ * @param game_map указатель на игровую карту, за которой надо почистить память
+ * @return код ошибки
+*/
 int delete_map(GameMap *game_map);
