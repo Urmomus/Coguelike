@@ -35,8 +35,9 @@ typedef struct
 } Unit;
 
 
-ExceptionStatus pick_up(Unit *unit, Cell cell);
+// ExceptionStatus pick_up(Unit *unit, Cell cell);
 ExceptionStatus attack(Unit *attacker, Unit *defender);
 ExceptionStatus take_damage(Unit *unit, int damage);
 ExceptionStatus use(Unit *unit, Item *item);
 ExceptionStatus equip(Unit *unit, Item item);
+ExceptionStatus generate_monsters(Unit *monsters, int level);
