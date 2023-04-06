@@ -4,6 +4,8 @@
 
 ![](/github/Structure%20scheme.png "Structure scheme")
 
+## Сигнатуры функций
+
 ```c
 /**
  * @brief предмет
