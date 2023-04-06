@@ -11,7 +11,7 @@
  * @param effects эффекты предмета
  * @param name название предмета
  * @param uses число использований
-*/
+ */
 typedef struct
 {
     ItemType type;
