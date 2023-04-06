@@ -1,3 +1,6 @@
+#ifndef ITEMS_H
+#define ITEMS_H
+
 typedef enum
 {
     POISON,
@@ -13,6 +16,13 @@ typedef enum
 } ItemType;
 
 
+/**
+ * @brief предмет
+ * @param type тип предмета
+ * @param effects эффекты предмета
+ * @param name название предмета
+ * @param uses число использований
+*/
 typedef struct
 {
     ItemType type;
@@ -37,3 +47,5 @@ typedef struct
     SlotType type;
     Item item;
 } Slot;
+
+#endif

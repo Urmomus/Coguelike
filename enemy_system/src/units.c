@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "units.h"
 
+
 // ExceptionStatus pick_up(Unit *unit, Cell, cell)
 // {
 //     return OK;
@@ -34,25 +35,28 @@ ExceptionStatus equip(Unit *unit, Item item)
     unit->equipped_slots[item.type] = slot;
 }
 
-// int _get_number_of_monsters(int level)
-// {
-//     return 10;
-// }
+ExceptionStatus _generate_monster(Unit *monster, int level)
+{
+    monster->defense = level;
+    monster->dmg = level;
+    // monster->effects;
+    monster->equipped_slots;
+    monster->hp = level;
+    // monster->inventory;
+    monster->kills;
+    monster->lvl = level;
+    monster->miss_chance = 0;
+    monster->name = "kookech";
+    monster->unit_type = GOBLIN;
+}
 
-// ExceptionStatus _generate_monster(int *monster, int level)
-// {
-//     return OK;
-// }
+ExceptionStatus generate_monsters(Unit *monsters[], int size, int level)
+{
+    for (int i = 0; i < size; i++)
+    {
+        monsters[i] = malloc(sizeof(Unit));
+        _generate_monster(monsters[i], level);
+    }
 
-// ExceptionStatus generate_monsters(Unit *monsters, int level)
-// {
-//     int number_of_monsters;
-
-//     number_of_monsters = _get_number_of_monsters(level);
-//     for (int i = 0; i < number_of_monsters; i++)
-//     {
-//         _generate_monster(&monsters[i], level);
-//     }
-
-//     return OK;
-// }
+    return OK;
+}
