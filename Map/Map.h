@@ -4,6 +4,8 @@
 // сия библиотека описывает глобальную карту, где происходит действие игры
 
 #include "Cell/Cell.h"
+#include "../enemy_system/units.h"
+#include "../enemy_system/items.h"
 
 typedef struct
 {

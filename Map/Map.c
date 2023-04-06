@@ -1,9 +1,6 @@
 #include "Map.h"
 #include <time.h>
 #include <stdlib.h>
-#include "enemy_system/units.h"
-#include "enemy_system/items.h"
-
 
 // если имя функции начинается с нижнего подчёркивания, то она исключительно внутрифайловая,
 // то есть, выставлять её прототип в .h я не буду

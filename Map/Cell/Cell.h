@@ -1,8 +1,8 @@
 #ifndef CELL_H
 #define CELL_H
 
-#include "../enemy_system/units.h"
-#include "../enemy_system/items.h"
+#include "../../enemy_system/units.h"
+#include "../../enemy_system/items.h"
 
 // описывает возможные типы клеток
 enum CellType
