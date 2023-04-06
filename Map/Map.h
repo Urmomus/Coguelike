@@ -56,7 +56,7 @@ int generate_maps_landscape(GameMap *game_map);
  * @param units_num кол-во мобов
  * @return код ошибки
  */
-int place_objects_on_map(GameMap *game_map);
+int place_objects_on_map(GameMap *game_map, Item *items, int items_num, Unit *units, int units_num);
 
 /**
  * @brief обновляет состояние игровой карты
