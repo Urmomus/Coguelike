@@ -1,5 +1,8 @@
-// сия библиотека описывает <клетку игрового поля>
-#include "Object.h"
+#ifndef CELL_H
+#define CELL_H
+
+#include "../enemy_system/units.h"
+#include "../enemy_system/items.h"
 
 // описывает возможные типы клеток
 enum CellType
@@ -12,5 +15,8 @@ enum CellType
 typedef struct
 {
 	char type; 		// тип клетки. принимает значения из CellType
-	Object* object;	// моб / предмет, стоящий на клетке
+	Unit *unit;		// моб, стоящий на клетке (NULL, если моба нет)
+	Item *item;		// предмет, лежащий на клетке (NULL, если моба нет)
 } Cell;
+
+#endif

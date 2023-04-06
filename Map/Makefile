@@ -1,2 +1,5 @@
 all: 
-	gcc main.c Map.c -o runme
+	gcc Map.c -c
+
+clear:
+	rm *.o

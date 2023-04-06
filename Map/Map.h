@@ -1,6 +1,9 @@
+#ifndef MAP_H
+#define MAP_H
+
 // сия библиотека описывает глобальную карту, где происходит действие игры
 
-#include "Cell.h"
+#include "Cell/Cell.h"
 
 typedef struct
 {
@@ -28,20 +31,46 @@ typedef struct
  */
 int generate_maps_landscape(GameMap *game_map);
 
-// TODO
+/**
+ * @brief размещает монстров и предметы на игровой карте
+ * @param game_map игровая карта (с готовым ландшафтом)
+ * @param items массив предметов
+ * @param items_num кол-во предметов
+ * @param units массив мобов
+ * @param units_num кол-во мобов
+ * @return код ошибки
+ */
 int place_objects_on_map(GameMap *game_map);
 
-// TODO
+/**
+ * @brief обновляет состояние игровой карты
+ * @param game_map игровая карта
+ * @return код ошибки
+ */
 int renew_map_state(GameMap *game_map);
 
-// TODO
-int game_is_finished(GameMap *game_map);
+/**
+ * @brief проверяет, окончилась ли игра на игровой карте
+ * @param game_map игровая карта
+ * @param is_finished сюда вернётся 1, если игра закончилась, и 0 в противном случае
+ * @return код ошибки
+ */
+int game_is_finished(GameMap *game_map, char *is_finished);
 
-// TODO
-int get_map_state(GameMap *game_map);
+/**
+ * @brief возвращает указатель на игровую карту
+ * @param game_map игровая карта
+ * @return код ошибки
+ */
+GameMap* get_map_state(GameMap *game_map);
 
-// TODO
-int set_map_state(GameMap *game_map);
+/**
+ * @brief копирует одну игровую карту в другую
+ * @param game_map игровая карта -- в которую будем копировать
+ * @param source откуда будем копировать
+ * @return код ошибки
+ */
+int set_map_state(GameMap *game_map, GameMap *source);
 
 /**
  * @brief создаёт карту, выделяет память и задаёт некоторые стартовые параметры (см. в settings)
@@ -57,3 +86,5 @@ int init_map(GameMap *game_map, MapSettings settings);
  * @return код ошибки
 */
 int delete_map(GameMap *game_map);
+
+#endif
