@@ -7,6 +7,11 @@
 #include "../enemy_system/units.h"
 #include "../enemy_system/items.h"
 
+/**
+ * @brief структура настроек для генерации карты
+ * @param size_x размер карты по оси оХ
+ * @param size_y размер карты по оси оУ
+*/
 typedef struct
 {
 	int size_x;				// размер карты по оси oX
@@ -14,6 +19,15 @@ typedef struct
 }
 MapSettings;
 
+/**
+ * @brief структура игровой карты
+ * @param level номер этажа
+ * @param size_x ширина карты
+ * @param size_y высота карты
+ * @param data двумерный массив клеток, являющий собой карту
+ * @param mobs_list список всех мобов, что есть на карте
+ * @param items_list список всех предметов, что есть карте
+*/
 typedef struct
 {
 	int level;			// номер этажа
@@ -22,8 +36,8 @@ typedef struct
 	int size_y;			// высота карты
 	Cell **data; 		// двумерный массив клеток, являющий собой карту
 	
-	//Unit *mobs_list;	// список всех мобов, что есть на карте
-	//Item *items_list;	// список всех предметов
+	Unit *mobs_list;	// список всех мобов, что есть на карте
+	Item *items_list;	// список всех предметов
 } GameMap;
 
 /**
