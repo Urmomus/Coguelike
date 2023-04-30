@@ -84,10 +84,18 @@ int delete_map(GameMap *game_map)
 
 int init_map(GameMap *game_map, MapSettings settings)
 {
-	
+	// задаём карте указанные размеры
 	game_map -> size_x = settings.size_x;
 	game_map -> size_y = settings.size_y;
 	
+	// изначально на карте нет монстров
+	game_map -> units_list = NULL;
+	game_map -> units_num = 0;
+
+	// и предметов тоже нет
+	game_map -> items_list = NULL;
+	game_map -> items_num = 0;
+
 	// выделяем память под размеры карты
 	game_map -> data = malloc(sizeof(Cell*) * game_map -> size_y);
 	for (int i = 0; i < game_map -> size_y; ++i)
@@ -164,5 +172,20 @@ int generate_maps_landscape(GameMap *game_map)
 	for (int i = 0; i < _std_settings.steps; ++i)
 		_next_state(game_map);
 	
+	return 0;
+};
+
+
+/**
+ * @brief размещает монстров и предметы на игровой карте
+ * @param game_map игровая карта (с готовым ландшафтом)
+ * @param items массив предметов
+ * @param items_num кол-во предметов
+ * @param units массив мобов
+ * @param units_num кол-во мобов
+ * @return код ошибки
+ */
+int place_objects_on_map(GameMap *game_map, Item *items, int items_num, Unit *units, int units_num)
+{
 	return 0;
 };
