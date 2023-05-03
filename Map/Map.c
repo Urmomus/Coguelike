@@ -7,7 +7,9 @@
 
 enum Errors			// возможные ошибки
 {
-	SIZE_ERROR,			// размеры карт при копировании не совпадают
+	NO_ERRORS, 					// нет ошибок
+	SIZE_ERROR,					// размеры карт при копировании не совпадают
+	MONSTER_OR_ITEMS_LEN_ERROR, // ошибка при копировании карты: не совпадает число монстров / предметов
 };
 
 // структура-контейнер для настроек компиляции
@@ -58,7 +60,7 @@ int _cnt_neighbours(GameMap *game_map, int x, int y, int *result)
                 *result += 1;
 			};
 		};
-    return 0;
+    return NO_ERRORS;
 };
 
 int _copy_map(GameMap *from, GameMap *to)
@@ -66,20 +68,42 @@ int _copy_map(GameMap *from, GameMap *to)
 	if ((from -> size_x != to -> size_x) || (from -> size_y != to -> size_y))
 		return SIZE_ERROR;
 	
+	if ((from -> items_num != to -> items_num) || (from -> units_num != from -> units_num))
+		return MONSTER_OR_ITEMS_LEN_ERROR;
+
 	for (int i = 0; i < from -> size_y; ++i)
 		for (int j = 0; j < from -> size_x; ++j)
 			to -> data[i][j] = from -> data[i][j];
 	
-	return 0;
+	// не забываем скопировать уровень
+	to -> level = from -> level;
+
+	// не забываем скопировать предметы
+	for (int i = 0; i < from -> items_num; ++i)
+		to -> items_list[i] = from -> items_list[i];
+	
+	// не забываем скопировать мобов
+	for (int i = 0; i < from -> units_num; ++i)
+		to -> units_list[i] = from -> units_list[i];
+
+	return NO_ERRORS;
 };
 
 int delete_map(GameMap *game_map)
 {	
+	// сначала чистим всю память, выделенную под клетки.
 	for (int i = 0; i < game_map -> size_y; ++i)
 		free(game_map -> data[i]);
 	free(game_map -> data);
 	
-	return 0;
+	
+	// потом чистим память, выделенную под предметы 
+	free(game_map -> items_list);
+	
+	// и мобов
+	free(game_map -> units_list);
+	
+	return NO_ERRORS;
 };
 
 int init_map(GameMap *game_map, MapSettings settings)
@@ -87,16 +111,25 @@ int init_map(GameMap *game_map, MapSettings settings)
 	// задаём карте указанные размеры
 	game_map -> size_x = settings.size_x;
 	game_map -> size_y = settings.size_y;
+	// и уровень
+	game_map -> level = settings.level;
+
 	
-	// изначально на карте нет монстров
-	game_map -> units_list = NULL;
-	game_map -> units_num = 0;
+	// работаем с монстрами и предметами
+	const int MONSTER_COEFF = 2; 	// кол-во монстров уровне = уровень * MONSTER_COEFF + 2 + 1(игрок).
+	const int ITEM_COEFF = 3;		// кол-во предметов на уровне = уровень * ITEM_COEFF + 5
 
-	// и предметов тоже нет
-	game_map -> items_list = NULL;
-	game_map -> items_num = 0;
+	// вычисляем их количество
+	game_map -> units_num = game_map -> level * MONSTER_COEFF + 2 + 1;
+	game_map -> items_num = game_map -> level * ITEM_COEFF + 5;
 
-	// выделяем память под размеры карты
+	// выделяем память под предметы
+	game_map -> items_list = malloc(sizeof(Item) * game_map -> items_num);
+	
+	// выделяем память под юнитов
+	game_map -> units_list = malloc(sizeof(Unit) * game_map -> units_num);
+
+	// выделяем память под клетки карты
 	game_map -> data = malloc(sizeof(Cell*) * game_map -> size_y);
 	for (int i = 0; i < game_map -> size_y; ++i)
 		game_map -> data[i] = malloc(sizeof(Cell) * game_map -> size_x);
@@ -114,8 +147,12 @@ int _next_state(GameMap *game_map)
 	GameMap tmp;
 	
 	MapSettings tmp_settings;
+
+	// копируем настройки исходной карты
 	tmp_settings.size_x = game_map -> size_x;
 	tmp_settings.size_y = game_map -> size_y;
+	tmp_settings.level = game_map -> level;
+
 	init_map(&tmp, tmp_settings);
 	
 	_copy_map(game_map, &tmp);
@@ -151,7 +188,7 @@ int _next_state(GameMap *game_map)
          
     _copy_map(&tmp, game_map);
     delete_map(&tmp);
-	return 0;
+	return NO_ERRORS;
 };
 
 /**
@@ -172,20 +209,22 @@ int generate_maps_landscape(GameMap *game_map)
 	for (int i = 0; i < _std_settings.steps; ++i)
 		_next_state(game_map);
 	
-	return 0;
+	return NO_ERRORS;
 };
 
-
 /**
- * @brief размещает монстров и предметы на игровой карте
+ * @brief генерирует и размещает монстров и предметы на игровой карте
  * @param game_map игровая карта (с готовым ландшафтом)
- * @param items массив предметов
- * @param items_num кол-во предметов
- * @param units массив мобов
- * @param units_num кол-во мобов
  * @return код ошибки
  */
-int place_objects_on_map(GameMap *game_map, Item *items, int items_num, Unit *units, int units_num)
+int generate_maps_content(GameMap *game_map)
 {
-	return 0;
+	// создаём монстров и предметы (списки)
+
+	//generate_monsters(&game_map -> units_list, game_map -> units_num, game_map -> level);
+	//generate_loot(&game_map -> items_list, game_map -> items_num, game_map -> level);
+	
+	
+	
+	return OK;
 };

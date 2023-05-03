@@ -10,12 +10,13 @@ int main(void)
 	MapSettings settings;
 	settings.size_x = 40;
 	settings.size_y = 40;
-	
+	settings.level = 5;
+
 	// пока нет функций -- зададим вручную
 	init_map(&game_map, settings);
 	
 	int err_code = generate_maps_landscape(&game_map);
-	
+	err_code = generate_maps_content(&game_map);
 
 	// сохраняем ландшафт карты в "test_map.txt"
 	char *filename = "test_map.txt";
@@ -28,6 +29,14 @@ int main(void)
 
 	fclose(f_out);
 
+	
+	// удолить
+	for (int x = 0; x < game_map.units_num; ++x)
+		game_map.data[0][x].unit = &game_map.units_list[x];
+	for (int x = 0; x < game_map.items_num; ++x)
+		game_map.data[1][x].item = &game_map.items_list[x];
+	
+	
 	// сохраняем объекты на карте в "objects.txt"
 	char *filename_2 = "objects.txt";
 	f_out = fopen(filename_2, "w");
@@ -43,7 +52,7 @@ int main(void)
 		}
 
 	fclose(f_out);
-
+	
 	delete_map(&game_map);	// удаляем карту
 	return err_code;
 };

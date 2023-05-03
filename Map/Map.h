@@ -4,8 +4,8 @@
 // сия библиотека описывает глобальную карту, где происходит действие игры
 
 #include "Cell/Cell.h"
-#include "../enemy_system/units.h"
-#include "../enemy_system/items.h"
+#include "../enemy_system/src/units.h"
+#include "../enemy_system/src/items.h"
 
 /**
  * @brief структура настроек для генерации карты
@@ -16,6 +16,7 @@ typedef struct
 {
 	int size_x;				// размер карты по оси oX
 	int size_y;				// размер карты по оси oY
+	int level;				// уровень (порядковый номер этажа, на котором находится игрок)
 }
 MapSettings;
 
@@ -51,15 +52,11 @@ typedef struct
 int generate_maps_landscape(GameMap *game_map);
 
 /**
- * @brief размещает монстров и предметы на игровой карте
+ * @brief генерирует и размещает монстров и предметы на игровой карте
  * @param game_map игровая карта (с готовым ландшафтом)
- * @param items массив предметов
- * @param items_num кол-во предметов
- * @param units массив мобов
- * @param units_num кол-во мобов
  * @return код ошибки
  */
-int place_objects_on_map(GameMap *game_map, Item *items, int items_num, Unit *units, int units_num);
+int generate_maps_content(GameMap *game_map);
 
 /**
  * @brief обновляет состояние игровой карты
