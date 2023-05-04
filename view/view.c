@@ -3,10 +3,10 @@
 
 int show_map(map)
 {
-    if getch
     initscr();
-    //getch('M');
+
     printw(map);
+
     endwin();
 }
 
@@ -23,6 +23,8 @@ int show_inventor(items)
 {
     intscr();
 
+    //в таблице или списком?
     printw(items)
+
     endwin()
 }
