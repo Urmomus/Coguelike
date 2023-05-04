@@ -1,0 +1,17 @@
+TARGET = testSavingSystem
+CC = gcc
+
+PREF_SRC = ./tests/
+PREF_OBJ = ./tests/
+
+SRC = $(wildcard $(PREF_SRC)*.c)
+OBJ = $(patsubst $(PREF_SRC)%.c, $(PREF_OBJ)%.o, $(SRC))
+
+${TARGET}: ${OBJ}
+	ar r ${TARGET}.a ${OBJ}
+
+${PREF_OBJ}%.o: ${PREF_SRC}%.c
+	${CC} -c -I ${HEADER_PREF} $< -o $@
+
+clean:
+	rm ${TARGET} ${OBJ}
