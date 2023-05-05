@@ -15,6 +15,6 @@ GameMap load(GameMap map_data);
  * @brief сохранение состояния карты
  * @param map_data структура карта
 */
-void save(GameMap map_data);
+void save(GameMap *map_data);
 
 #endif
