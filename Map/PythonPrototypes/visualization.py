@@ -5,24 +5,22 @@ from tkinter import Tk, Canvas
 import prototype
 
 # константы
-cells_x = 5    # размер ячейки в ширину
-cells_y = 5    # размер ячейки в длину
+cells_x = 15    # размер ячейки в ширину
+cells_y = 15    # размер ячейки в длину
+
+# объекты pygame
+size_y = 40
+size_x = 40
+window = window = tk.Tk()    # создаём окно ТKinter
+canvas = Canvas(window, width = size_x * cells_x, height = size_y * cells_y)
 
 # принимает на вход двумерный массив нулей и единиц -- Map
 # Где 0 -- рисует пространство
 # Где 1 -- рисует стенку
 def print_map(Map):
-    window = tk.Tk()    # создаём окно ТKinter
-    
-    # определяем размеры переданного массива
-    size_y = len(Map)
-    size_x = len(Map[0])
     
     # меняем размер окна TKinter
     window.geometry('{}x{}+200+100'.format(size_x * cells_x, size_y * cells_y))
-    
-    # создаём Canvas, где будем отрисовывать карту
-    canvas = Canvas(window, width = size_x * cells_x, height = size_y * cells_y)
     
     # отрисовываем карту
     for i in range(size_y):
@@ -36,10 +34,12 @@ def print_map(Map):
             fill = color,
             outline = color
             )
-        
+
+
+
+
     # запускаем всё вышеописанное мероприятие
     canvas.pack()
-    window.mainloop()
 
     
 # считывает карту, которую надо отрисовать, из файла filename,
@@ -66,7 +66,61 @@ def read_map_from_file(filename):
     
     return new_Map
 
+def read_objects_from_file(filename):
+    # открываем входной файл
+    f_in = open(filename, 'r')
+
+    objects = []        # массив объектов, что лежат в файле
+    num_of_chars = 3    # кол-во свойств на один предмет
+
+    for ind, val in enumerate(f_in):
+        if ind % num_of_chars == 0:     # это координата по х
+            objects.append([])
+            objects[ind//num_of_chars].append(int(val))
+
+        if ind % num_of_chars == 1:     # это координата по y
+            objects[ind//num_of_chars].append(int(val))
+        
+        if ind % num_of_chars == 2:     # это координата по y
+            objects[ind//num_of_chars].append(val.replace('\n', ''))
+
+    # закрываем входной файл
+    f_in.close()
+
+    return objects
+
+# принимает на вход массив объектов;
+# объект -- массив из трёх элементов (свойств):
+#   0. координата по х
+#   1. координата по y
+#   2. тип (монстр али предмет)
+# и отрисовывает их (карта должна быть уже отрисована)
+def print_objects(objects):
+    
+    # отрисовываем объекты
+    for x, y, type in objects:
+            print(x,y,type)
+            color = "cadetblue1"
+
+            if type == "unit":
+                color = 'brown1'
+            
+            if type == "item":
+                color = "blue2"
+            
+            canvas.create_rectangle(x*cells_x, y*cells_y, (x+1)*cells_x, (y+1)*cells_y,
+                fill = color,
+                outline = color
+                )
+
+    # обновляем происходящее на экране
+    canvas.pack() 
+
 if __name__ == "__main__":
     #test_map = prototype.generate_map(130, 0.36, 3, 4, 5)
     test_map = read_map_from_file('test_map.txt')
+    maps_objects = read_objects_from_file('objects.txt')
     print_map(test_map)
+    print_objects(maps_objects)
+    
+    window.mainloop()   # отображаем всё вышеотрисованное

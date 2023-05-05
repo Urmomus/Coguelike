@@ -16,6 +16,7 @@ typedef struct
 {
 	int size_x;				// размер карты по оси oX
 	int size_y;				// размер карты по оси oY
+	int level;				// уровень (порядковый номер этажа, на котором находится игрок)
 }
 MapSettings;
 
@@ -36,7 +37,10 @@ typedef struct
 	int size_y;			// высота карты
 	Cell **data; 		// двумерный массив клеток, являющий собой карту
 	
-	Unit *mobs_list;	// список всех мобов, что есть на карте
+	int units_num;		// кол-во мобов, что есть на карте
+	Unit *units_list;	// список всех мобов, что есть на карте
+
+	int items_num;		// кол-во предметов, что есть на карте
 	Item *items_list;	// список всех предметов
 } GameMap;
 
@@ -48,15 +52,11 @@ typedef struct
 int generate_maps_landscape(GameMap *game_map);
 
 /**
- * @brief размещает монстров и предметы на игровой карте
+ * @brief генерирует и размещает монстров и предметы на игровой карте
  * @param game_map игровая карта (с готовым ландшафтом)
- * @param items массив предметов
- * @param items_num кол-во предметов
- * @param units массив мобов
- * @param units_num кол-во мобов
  * @return код ошибки
  */
-int place_objects_on_map(GameMap *game_map, Item *items, int items_num, Unit *units, int units_num);
+int generate_maps_content(GameMap *game_map);
 
 /**
  * @brief обновляет состояние игровой карты

@@ -27,7 +27,6 @@ int _test_get_map_state(char **message)
 */
 int _test_set_map_state(char **message)
 {
-
 };
 
 /***********
@@ -59,7 +58,14 @@ int _test_init_map(char **message)
     };
 
     delete_map(&map_1);
-
+    
+    // проверяем, что если передать в init_map передать NULL, то произойдёт ошибка
+    if (init_map(NULL, map_1_settings))
+    {
+        *message = 
+        return 1;
+    };
+    return 0;
 
 };
 
@@ -91,7 +97,7 @@ int _test_delete_map(char **message)
     {
         *message = "Ошибка в delete_map: не нашла ошибку c NULL!\n";
         return 1;
-    }
+    };
 
     return 0;
 };
