@@ -213,6 +213,8 @@ int generate_maps_landscape(GameMap *game_map)
 		{
 			int random_value = rand() % (100+1); // приводим к промежутку [0; 100] -- к процентам
 			game_map -> data[y][x].type = (random_value <= _std_settings.chance);
+			game_map -> data[y][x].unit = NULL; // на этом этапе на клетках нет ничего и никого
+			game_map -> data[y][x].item = NULL;	
 		};
 	
 	for (int i = 0; i < _std_settings.steps; ++i)
@@ -231,6 +233,8 @@ int generate_maps_landscape(GameMap *game_map)
  */
 int generate_maps_content(GameMap *game_map)
 {
+	srand(0); // инициализируем семя случайной генерации
+
 	// создаём монстров и предметы (списки)
 
 	//generate_monsters(&game_map -> units_list, game_map -> units_num, game_map -> level);
@@ -257,6 +261,9 @@ int generate_maps_content(GameMap *game_map)
 	// перебираем все предметы
 	for (int i = 0; i < game_map -> items_num; ++i)
 	{
+		// нижний левый угол: (x_1, y_1)
+		// правый верхний угол: (x_2, y_2)
+
 		// высчитываем координаты текущего блока
 		int x_1 = i * block_size_x;
 		int y_1 = (x_1 / game_map -> size_x) * block_size_y;
@@ -272,11 +279,60 @@ int generate_maps_content(GameMap *game_map)
 
 		// здесь уже гарантируется, что следующий блок можно воткнуть просто
 		// впритык слева от предыдущего
-		int x_2 = x_1 + block_size_x-1;
-		int y_2 = y_1 + block_size_y-1;
+		int x_2 = x_1 + block_size_x - 1;	// не забываем вычесть 1, чтобы блоки не накладывались друг на друга
+		int y_2 = y_1 + block_size_y - 1;
 
-		//printf("Координаты блока: (%d, %d) -- (%d, %d)\n", x_1, y_1, x_2, y_2);
-		printf("%d\t%d\n%d\t%d\n", x_1, y_1, x_2, y_2);
+		// идея такая: мы считаем количество клеток suitable_cells_cnt, на которые можно разместить предмет, внутри блока.
+		// потом берём рандомное число ind, меньшее, чем suitable_cells_cnt, и ставим текущий предмет на свободную клетку
+		// блока под номером ind. 
+
+		int suitable_cells_cnt = 0;
+
+		// проходим по блоку
+		for (int y = y_1; y <= y_2; ++y)
+			for (int x = x_1; x <= x_2; ++x)
+			{
+				// работаем только с открытым пространством и скипаем стены
+				if (game_map -> data[y][x].type == WALL_CELL)
+					continue;
+				
+				// работаем только с пустыми клетками (где нет других предметов / юнитов)
+				if (game_map -> data[y][x].unit != NULL || game_map -> data[y][x].item != NULL)
+					continue;
+				
+				suitable_cells_cnt += 1;
+			};
+
+		if (suitable_cells_cnt == 0)
+			continue; // TODO: стирать предмет из списка предметов
+		
+		printf("В блоке %d суммарно %d клеток, где можно разместить предмет.\n", i, suitable_cells_cnt);
+
+		int ind = rand() % suitable_cells_cnt;
+		int now_ind = 0;
+		
+		// проходим по блоку
+		for (int y = y_1; y <= y_2; ++y)
+			for (int x = x_1; x <= x_2; ++x)
+			{
+				// работаем только с открытым пространством и скипаем стены
+				if (game_map -> data[y][x].type == WALL_CELL)
+					continue;
+				
+				// работаем только с пустыми клетками (где нет других предметов / юнитов)
+				if (game_map -> data[y][x].unit != NULL || game_map -> data[y][x].item != NULL)
+					continue;
+				
+				if (ind == now_ind)
+				{
+					game_map -> data[y][x].item = &(game_map -> items_list[i]);
+					printf("Предмет %d лежит на (%d, %d)\n", i, x, y);
+				};
+				++now_ind;
+			};
+
+		// эхо-печать
+		//printf("%d\t%d\n%d\t%d\n", x_1, y_1, x_2, y_2);
 	};
 
 	
