@@ -136,8 +136,6 @@ int test_generate_monsters(char **message)
         return 1;
     }
 
-    error_code = INVALID_SIZE;
-
     if (!(error_code == OK))
     {
         *message = GENERATE_MONSTERS_INVALID_CODE;
