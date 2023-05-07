@@ -226,50 +226,82 @@ int generate_maps_landscape(GameMap *game_map)
 	return NO_ERRORS;
 };
 
-/**
- * @brief генерирует и размещает монстров и предметы на игровой карте
- * @param game_map игровая карта (с готовым ландшафтом)
- * @return код ошибки
- */
-int generate_maps_content(GameMap *game_map)
+const unsigned int MAX_DEEP = 5;
+/***
+	@brief могильный ужас, а не функция: подбирает такие размеры прямоугольника, чтобы на карту влезло определённое число прямоугольников
+	@param blocks_num число прямоугольников
+	@param map_size_x размер карты по х
+	@param map_size_y размер карты по у
+	@param block_size_x размер прямоугольника по х
+	@param block_size_y размер прямоугольника по у
+	@param deep -- глубина рекурсии. Изначально равна нулю!
+*/
+void _cnt_boundaries(int blocks_num, int map_size_x, int map_size_y, int *block_size_x, int *block_size_y, unsigned int deep)
+{
+	static int min_diff = (1 << sizeof(int));
+
+	if (deep >= MAX_DEEP)
+		return;
+
+	int a, b;
+
+	for (int i = 1; i * i <= blocks_num; ++i)
+	{
+		if (blocks_num % i)
+			continue;
+		a = map_size_x / i;
+		b = map_size_y / (blocks_num / i);
+		
+		int diff = abs(a - b);
+		if (diff < min_diff)
+		{
+			*block_size_x = a;
+			*block_size_y = b;	
+		};
+	};
+
+	_cnt_boundaries(blocks_num+1, map_size_x, map_size_y, block_size_x, block_size_y, deep+1);
+};
+
+/***
+	@brief функция-обобщения, которая может расставлять и монстров, и предметы на карте
+	@param game_map карта, где надо размещать
+	@param items_num кол-во размещаемых объектов
+	@param type: 'u' -- units, 'i' -- items.
+*/
+void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 {
 	srand(0); // инициализируем семя случайной генерации
 
-	// создаём монстров и предметы (списки)
-
-	//generate_monsters(&game_map -> units_list, game_map -> units_num, game_map -> level);
-	//generate_loot(&game_map -> items_list, game_map -> items_num, game_map -> level);
 
 	// что здесь происходит?
 	// карта разбивается на прямоугольные блоки.
-	// внутри каждого такого блока лежит предмет.
-	
-	// как считаются размеры блока?
-	// шаг 0. блоков столько же, сколько и предметов (items_num).
-	// шаг 1. перебираем все делители items_num: 
-	//		а -- делитель items_num;
-	//		b = items_num / a;
-	// шаг 2. выбираем такие a и b, чтобы |a-b| был минимальным (чтобы блоки были максимально приближены к квадратным).
-	
+	// внутри каждого такого блока лежит объект.
 
-	// перебираем все предметы
-	for (int i = 0; i < game_map -> items_num; ++i)
+	int block_size_x, block_size_y;
+	_cnt_boundaries(objects_num, game_map -> size_x, game_map -> size_y, &block_size_x, &block_size_y, 0);
+
+	/*
+	// эхо-печать
+	printf("кол-во объектов: %d\n", objects_num);
+	printf("площадь на объект: %d\n", block_size_x * block_size_y);
+	printf("размер блока по х: %d\n", block_size_x);
+	printf("размер блока по у: %d\n", block_size_y);
+	*/
+
+	int blocks_in_line = (game_map -> size_x / block_size_x);		// кол-во блоков в ряду 
+	int cells_in_line = block_size_x * blocks_in_line;				// кол-во клеток в оном ряду из блоков
+
+	// перебираем все объекты
+	for (int i = 0; i < objects_num; ++i)
 	{
 		// нижний левый угол: (x_1, y_1)
 		// правый верхний угол: (x_2, y_2)
 
 		// высчитываем координаты текущего блока
-		int x_1 = i * block_size_x;
-		int y_1 = (x_1 / game_map -> size_x) * block_size_y;
-		x_1 %= (block_size_x * (game_map -> size_x / block_size_x));
 
-		// если конец блока не влезает справа от начала блока,
-		// то весь блок следует сдвинуть вверх и в самое лево
-		if (x_1 + block_size_x > game_map -> size_x)
-		{
-			x_1 = 0;
-			y_1 += block_size_y;
-		};
+		int x_1 = (i * block_size_x) % cells_in_line;
+		int y_1 = (i / blocks_in_line) * block_size_y;
 
 		// здесь уже гарантируется, что следующий блок можно воткнуть просто
 		// впритык слева от предыдущего
@@ -277,10 +309,8 @@ int generate_maps_content(GameMap *game_map)
 		int y_2 = y_1 + block_size_y - 1;
 		
 		// эхо-печать
-		printf("блок номер %d\n", i);
-		printf("%d\t%d\n%d\t%d\n", x_1, y_1, x_2, y_2);
-
-		/*
+		//printf("блок номер %d\n", i);
+		//printf("%d\t%d\n%d\t%d\n", x_1, y_1, x_2, y_2);
 
 		// идея такая: мы считаем количество клеток suitable_cells_cnt, на которые можно разместить предмет, внутри блока.
 		// потом берём рандомное число ind, меньшее, чем suitable_cells_cnt, и ставим текущий предмет на свободную клетку
@@ -304,9 +334,9 @@ int generate_maps_content(GameMap *game_map)
 			};
 
 		if (suitable_cells_cnt == 0)
-			continue; // TODO: стирать предмет из списка предметов
+			continue; // TODO: стирать объект из списка предметов
 		
-		printf("В блоке %d суммарно %d клеток, где можно разместить предмет.\n", i, suitable_cells_cnt);
+		//printf("В блоке %d суммарно %d клеток, где можно разместить объект.\n", i, suitable_cells_cnt);
 
 		int ind = rand() % suitable_cells_cnt;
 		int now_ind = 0;
@@ -325,20 +355,31 @@ int generate_maps_content(GameMap *game_map)
 				
 				if (ind == now_ind)
 				{
-					game_map -> data[y][x].item = &(game_map -> items_list[i]);
-					printf("Предмет %d лежит на (%d, %d)\n", i, x, y);
+					if (type == 'i')
+						game_map -> data[y][x].item = &(game_map -> items_list[i]);
+					else
+						game_map -> data[y][x].unit = &(game_map -> units_list[i]);
+					//printf("Объект %d -- на (%d, %d)\n", i, x, y);
 				};
 				++now_ind;
 			};
-		*/
 	};
+	
+};
 
-	
-	// эхо-печать
-	printf("кол-во предметов: %d\n", game_map -> items_num);
-	printf("площадь на предмет: %d\n", size_of_block);
-	printf("размер блока по х: %d\n", block_size_x);
-	printf("размер блока по у: %d\n", block_size_y);
-	
+/**
+ * @brief генерирует и размещает монстров и предметы на игровой карте
+ * @param game_map игровая карта (с готовым ландшафтом)
+ * @return код ошибки
+ */
+int generate_maps_content(GameMap *game_map)
+{
+	// создаём монстров и предметы (списки)
+
+	//generate_monsters(&game_map -> units_list, game_map -> units_num, game_map -> level);
+	//generate_loot(&game_map -> items_list, game_map -> items_num, game_map -> level);
+
+	_place_objects_on_map(game_map, game_map -> items_num, 'i');
+	_place_objects_on_map(game_map, game_map -> units_num, 'u');
 	return OK;
 };

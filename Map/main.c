@@ -8,9 +8,9 @@ int main(void)
 	GameMap game_map;
 	
 	MapSettings settings;
-	settings.size_x = 100;
-	settings.size_y = 100;
-	settings.level = 5;
+	settings.size_x = 50;
+	settings.size_y = 50;
+	settings.level = 4;
 
 	// пока нет функций -- зададим вручную
 	init_map(&game_map, settings);

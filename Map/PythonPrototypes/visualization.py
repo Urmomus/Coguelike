@@ -5,12 +5,12 @@ from tkinter import Tk, Canvas
 import prototype
 
 # константы
-cells_x = 8    # размер ячейки в ширину
-cells_y = 8    # размер ячейки в длину
+cells_x = 16    # размер ячейки в ширину
+cells_y = 16    # размер ячейки в длину
 
 # объекты pygame
-size_y = 100
-size_x = 100
+size_y = 50
+size_x = 50
 window = window = tk.Tk()    # создаём окно ТKinter
 canvas = Canvas(window, width = size_x * cells_x, height = size_y * cells_y)
 
