@@ -3,9 +3,9 @@
 
 // сия библиотека описывает глобальную карту, где происходит действие игры
 
-#include "Cell/Cell.h"
-#include "../enemy_system/src/units.h"
-#include "../enemy_system/src/items.h"
+#include "Cell.h"
+#include "units.h"
+#include "items.h"
 
 /**
  * @brief структура настроек для генерации карты

@@ -1,6 +1,8 @@
 #include "Map.h"
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h> // стереть
+#include <math.h>
 
 // если имя функции начинается с нижнего подчёркивания, то она исключительно внутрифайловая,
 // то есть, выставлять её прототип в .h я не буду
@@ -54,7 +56,7 @@ int _cnt_neighbours(GameMap *game_map, int x, int y, int *result)
                 continue;
             };
             
-            if (game_map -> data[neigbour_x][neigbour_y].type == WALL_CELL)
+            if (game_map -> data[neigbour_y][neigbour_x].type == WALL_CELL)
             {
                 // если сосед -- стенка, то засчитываем
                 *result += 1;
@@ -131,8 +133,10 @@ int init_map(GameMap *game_map, MapSettings settings)
 
 	// выделяем память под клетки карты
 	game_map -> data = malloc(sizeof(Cell*) * game_map -> size_y);
-	for (int i = 0; i < game_map -> size_y; ++i)
-		game_map -> data[i] = malloc(sizeof(Cell) * game_map -> size_x);
+	for (int y = 0; y < game_map -> size_y; ++y)
+		game_map -> data[y] = malloc(sizeof(Cell) * game_map -> size_x);
+	
+	return NO_ERRORS;
 };
 
 /**
@@ -153,35 +157,40 @@ int _next_state(GameMap *game_map)
 	tmp_settings.size_y = game_map -> size_y;
 	tmp_settings.level = game_map -> level;
 
-	init_map(&tmp, tmp_settings);
+	int err_code = init_map(&tmp, tmp_settings);
+	if(err_code)
+		return err_code;
 	
-	_copy_map(game_map, &tmp);
+	err_code = _copy_map(game_map, &tmp);
+	if(err_code)
+		return err_code;
+
 	
     for (int x = 0; x < game_map -> size_x; ++x)
 		for (int y = 0; y < game_map -> size_y; ++y)
 		{
 			int neighbours;
             _cnt_neighbours(game_map, x, y, &neighbours);
-            if(game_map -> data[x][y].type == WALL_CELL)
+            if(game_map -> data[y][x].type == WALL_CELL)
             {
                 if (neighbours < _std_settings.death_limit)
 				{	
-                    tmp.data[x][y].type = FREE_CELL;
+                    tmp.data[y][x].type = FREE_CELL;
                 }
                 else
                 {
-                    tmp.data[x][y].type = WALL_CELL;
+                    tmp.data[y][x].type = WALL_CELL;
 				};
             }
             else
             {
                 if (neighbours > _std_settings.birth_limit)
                 {
-                    tmp.data[x][y].type = WALL_CELL;
+                    tmp.data[y][x].type = WALL_CELL;
                 }
                 else
                 {
-                    tmp.data[x][y].type = FREE_CELL;
+                    tmp.data[y][x].type = FREE_CELL;
 				};
 			};
          };
@@ -199,16 +208,19 @@ int _next_state(GameMap *game_map)
 int generate_maps_landscape(GameMap *game_map)
 {
 	srand(time(0));		// подключаем случайные числа
-	for (int i = 0; i < game_map -> size_y; ++i)
-		for (int j = 0; j < game_map -> size_x; ++j)
+	for (int y = 0; y < game_map -> size_y; ++y)
+		for (int x = 0; x < game_map -> size_x; ++x)
 		{
 			int random_value = rand() % (100+1); // приводим к промежутку [0; 100] -- к процентам
-			game_map -> data[i][j].type = (random_value <= _std_settings.chance);
+			game_map -> data[y][x].type = (random_value <= _std_settings.chance);
 		};
 	
 	for (int i = 0; i < _std_settings.steps; ++i)
-		_next_state(game_map);
-	
+	{
+		int err_code = _next_state(game_map);
+		if (err_code)
+			return err_code;
+	};
 	return NO_ERRORS;
 };
 
@@ -223,8 +235,56 @@ int generate_maps_content(GameMap *game_map)
 
 	//generate_monsters(&game_map -> units_list, game_map -> units_num, game_map -> level);
 	//generate_loot(&game_map -> items_list, game_map -> items_num, game_map -> level);
+
+	// что здесь происходит?
+	// карта разбивается на прямоугольные блоки.
+	// внутри каждого такого блока лежит предмет.
 	
+	// size_of_block -- площадь блока.
+	// площадь блока = площадь карты / число предметов.
 	
-	
+	int size_of_block = (game_map -> size_x * game_map -> size_y) / game_map -> items_num;
+
+	// далее мы имеем два уравнения:
+	// размер_карты_по_х / размер_карты_по_у = размер_блока_по_х = размер_блока_по_у
+	// площадь_блока = размер_блока_по_х * размер_блока_по_у
+
+	// если их решить, то получатся нижеследующие уравнения
+
+	int block_size_y = sqrt((game_map -> size_y * size_of_block) / game_map -> size_x);
+	int block_size_x = size_of_block / block_size_y;
+
+	// перебираем все предметы
+	for (int i = 0; i < game_map -> items_num; ++i)
+	{
+		// высчитываем координаты текущего блока
+		int x_2 = (i + 1) * block_size_x;
+		int y_2 = (x_2 / game_map -> size_x) * block_size_y;
+		int y_1 = y_2 - block_size_y;
+		int x_1 = x_2 - block_size_x;
+
+		if (y_1 < 0)
+		{
+			y_1 += block_size_y;
+			y_2 += block_size_y;
+		};
+
+		if (x_1 < 0)
+		{
+			x_1 += block_size_x;
+			x_2 += block_size_x;
+		};
+
+		//printf("Координаты блока: (%d, %d) -- (%d, %d)\n", x_1, y_1, x_2, y_2);
+		printf("%d\n%d\nitem\n%d\n%d\nitem\n", x_1, y_1, x_2, y_2);
+	};
+
+	/*
+	// эхо-печать
+	printf("кол-во предметов: %d\n", game_map -> items_num);
+	printf("площадь на предмет: %d\n", size_of_block);
+	printf("размер блока по х: %d\n", block_size_x);
+	printf("размер блока по у: %d\n", block_size_y);
+	*/
 	return OK;
 };

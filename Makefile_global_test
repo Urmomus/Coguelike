@@ -1,0 +1,10 @@
+TARGET = globalTest
+CC = gcc
+
+PREF_HEADERS = ./Map/tests/test_Map/
+
+${TARGET}: 
+	${CC} global_test.c -L./Map/tests/ -ltest_Map -L./Map/ -lMap -I ${PREF_HEADERS}  -o ${TARGET}
+
+clear:
+	rm ${TARGET} ${OBJ}

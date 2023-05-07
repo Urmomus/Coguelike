@@ -1,7 +1,45 @@
-#include "../Map.h"
-#include "test_map.h"
+#include "Map.h"
+#include "test_Map.h"
 #include "ErrorCodes.h"
+#include <stdlib.h>
 
+// СООБЩЕНИЯ ОБ ОШИБКАХ
+
+// ошибки для init_map
+char* INIT_MAP_ERROR_WITH_SIZE = "Ошибка в init_map: создалась карта некорректного размера!\n";
+char* INIT_MAP_ERROR_WITH_NULL = "Ошибка в init_map: функция отработала для нулевого указателя!\n";
+
+
+// ошибки для game_is_finished
+char* GAME_IS_FINISHED_ERROR_WITH_NULL = "Ошибка в game_is_finished: функция отработала для нулевого указателя!\n";
+
+
+// ошибки для get_map_state
+char* GET_MAP_STATE_ERROR_WITH_NULL = "Ошибка в get_map_state: функция отработала для нулевого указателя!\n";
+
+
+// ошибки для set_map_state
+char* SET_MAP_STATE_ERROR_WITH_NULL = "Ошибка в set_map_state: функция отработала для нулевого указателя!\n";
+
+
+// ошибки для delete_map
+char* DELETE_MAP_ERROR_MAP_NOT_DELETED = "Ошибка в delete_map: карта не удалилась!\n";
+char* DELETE_MAP_ERROR_WITH_NULL = "Ошибка в delete_map: функция отработала для нулевого указателя!\n";
+
+
+// приватные функции
+
+int _test_game_is_finished(char **message);
+int _test_get_map_state(char **message);
+int _test_set_map_state(char **message);
+int _test_init_map(char **message);
+int _test_delete_map(char **message);
+int _test_generate_map_landscape(char **message);
+
+int _test_generate_map_landscape(char **message)
+{
+    return 0;
+};
 
 /***********
 /* @brief тест на функцию game_is_finished
@@ -9,7 +47,7 @@
 */
 int _test_game_is_finished(char **message)
 {
-
+    return 0;
 };
 
 /***********
@@ -18,7 +56,7 @@ int _test_game_is_finished(char **message)
 */
 int _test_get_map_state(char **message)
 {
-
+    return 0;
 };
 
 /***********
@@ -27,6 +65,7 @@ int _test_get_map_state(char **message)
 */
 int _test_set_map_state(char **message)
 {
+    return 0;
 };
 
 /***********
@@ -62,7 +101,7 @@ int _test_init_map(char **message)
     // проверяем, что если передать в init_map передать NULL, то произойдёт ошибка
     if (init_map(NULL, map_1_settings))
     {
-        *message = 
+        *message = INIT_MAP_ERROR_WITH_NULL;
         return 1;
     };
     return 0;
@@ -88,14 +127,14 @@ int _test_delete_map(char **message)
 
     if (map_1.data != NULL)
     {
-        *message = "Ошибка в delete_map: карта не удалилась!\n";
+        *message = DELETE_MAP_ERROR_MAP_NOT_DELETED;
         return 1;
     };
 
     // проверяем, что функция корректно обрабатывает случай, когда на вход не пришло корректной карты
     if (delete_map(NULL) != EMPTY_POINTER)
     {
-        *message = "Ошибка в delete_map: не нашла ошибку c NULL!\n";
+        *message = DELETE_MAP_ERROR_WITH_NULL;
         return 1;
     };
 
@@ -123,5 +162,8 @@ int test_Map(char **message)
     if (_test_delete_map(message) == 1)
         return 1;
     
+    if (_test_generate_map_landscape(message) == 1)
+        return 1;
+
     return 0;
 };
