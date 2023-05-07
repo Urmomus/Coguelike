@@ -258,33 +258,33 @@ int generate_maps_content(GameMap *game_map)
 	for (int i = 0; i < game_map -> items_num; ++i)
 	{
 		// высчитываем координаты текущего блока
-		int x_2 = (i + 1) * block_size_x;
-		int y_2 = (x_2 / game_map -> size_x) * block_size_y;
-		int y_1 = y_2 - block_size_y;
-		int x_1 = x_2 - block_size_x;
+		int x_1 = i * block_size_x;
+		int y_1 = (x_1 / game_map -> size_x) * block_size_y;
+		x_1 %= game_map -> size_x;
 
-		if (y_1 < 0)
+		// если конец блока не влезает справа от начала блока,
+		// то весь блок следует сдвинуть вверх и в самое лево
+		if (x_1 + block_size_x > game_map -> size_x)
 		{
+			x_1 = 0;
 			y_1 += block_size_y;
-			y_2 += block_size_y;
 		};
 
-		if (x_1 < 0)
-		{
-			x_1 += block_size_x;
-			x_2 += block_size_x;
-		};
+		// здесь уже гарантируется, что следующий блок можно воткнуть просто
+		// впритык слева от предыдущего
+		int x_2 = x_1 + block_size_x-1;
+		int y_2 = y_1 + block_size_y-1;
 
 		//printf("Координаты блока: (%d, %d) -- (%d, %d)\n", x_1, y_1, x_2, y_2);
-		printf("%d\n%d\nitem\n%d\n%d\nitem\n", x_1, y_1, x_2, y_2);
+		printf("%d\t%d\n%d\t%d\n", x_1, y_1, x_2, y_2);
 	};
 
-	/*
+	
 	// эхо-печать
 	printf("кол-во предметов: %d\n", game_map -> items_num);
 	printf("площадь на предмет: %d\n", size_of_block);
 	printf("размер блока по х: %d\n", block_size_x);
 	printf("размер блока по у: %d\n", block_size_y);
-	*/
+	
 	return OK;
 };

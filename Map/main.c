@@ -8,8 +8,8 @@ int main(void)
 	GameMap game_map;
 	
 	MapSettings settings;
-	settings.size_x = 50;
-	settings.size_y = 30;
+	settings.size_x = 40;
+	settings.size_y = 40;
 	settings.level = 5;
 
 	// пока нет функций -- зададим вручную
