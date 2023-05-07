@@ -52,5 +52,6 @@ Mkfile.old
 dkms.conf
 
 .vscode/
-bin/
 trash/
+global_test
+main
