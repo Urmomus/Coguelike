@@ -7,10 +7,10 @@ LIB_TEST_PREF = ./enemy_system/tests
 HEADER_PREF = ./enemy_system/src
 
 ${TARGET}: compileTests
-	./${TARGET}
+	./bin/${TARGET}
 
 compileTests: buildTests
-	${CC} ${TARGET}.c -I ${TEST_HEADER_PREF} -lTestEnemySystem -L ${LIB_TEST_PREF} -I ${HEADER_PREF} -lEnemySystem -L ./enemy_system -o ${TARGET}
+	${CC} ${TARGET}.c -I ${TEST_HEADER_PREF} -lTestEnemySystem -L ${LIB_TEST_PREF} -I ${HEADER_PREF} -lEnemySystem -L ./enemy_system -o ./bin/${TARGET}
 
 buildTests:
 	cd ./enemy_system/tests && make
