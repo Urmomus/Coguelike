@@ -200,6 +200,36 @@ int _next_state(GameMap *game_map)
 	return NO_ERRORS;
 };
 
+/***
+	@brief стандартная (т.е. рекурсивная) реализация поиска в ширину
+	@param game_map игровая карта, на которой выполняется dfs
+	@param used массив, где 0 -- клетка не посещалась, что-то ещё -- посещалась
+	@param x х текущей клетки
+	@param y y текущей клетки
+	@param size_x размер массива по x
+	@param size_y размер массива по у
+	@param nummer_of_island чем заполнять открытые территории, связанные с (x, y)
+	@param size_of_island кол-во клеток, привязанных к данной (передавать строго 0 (ноль)!!!)
+*/
+void _dfs(GameMap *game_map, char **used, int x, int y, int size_x, int size_y, int nummer_of_island, int *size_of_island)
+{
+	if (x >= size_x || x < 0) // вышли за пределы карты по х
+		return;
+	if (y >= size_y || y < 0) // вышли за пределы карты по у
+		return;
+	if (game_map -> data[y][x].type == WALL_CELL)	// попали в стену
+		return;
+	if (used[y][x] != 0) 		// эта клетка уже посчитана
+		return;
+
+	*size_of_island += 1;
+	used[y][x] = nummer_of_island;
+	_dfs(game_map, used, x + 1, y, size_x, size_y, nummer_of_island, size_of_island);
+	_dfs(game_map, used, x - 1, y, size_x, size_y, nummer_of_island, size_of_island);
+	_dfs(game_map, used, x, y + 1, size_x, size_y, nummer_of_island, size_of_island);
+	_dfs(game_map, used, x, y - 1, size_x, size_y, nummer_of_island, size_of_island);
+};
+
 /**
  * @brief генерирует ландашфт игровой карты (на основе алгоритма игры "жизнь")
  * @param game_map указатель на карту, ландшафт которой будем генерировать
@@ -207,7 +237,6 @@ int _next_state(GameMap *game_map)
  */
 int generate_maps_landscape(GameMap *game_map)
 {
-	srand(time(0));		// подключаем случайные числа
 	for (int y = 0; y < game_map -> size_y; ++y)
 		for (int x = 0; x < game_map -> size_x; ++x)
 		{
@@ -216,13 +245,65 @@ int generate_maps_landscape(GameMap *game_map)
 			game_map -> data[y][x].unit = NULL; // на этом этапе на клетках нет ничего и никого
 			game_map -> data[y][x].item = NULL;	
 		};
-	
+
 	for (int i = 0; i < _std_settings.steps; ++i)
 	{
 		int err_code = _next_state(game_map);
 		if (err_code)
 			return err_code;
 	};
+
+	// на этом месте карта уже сгенерировалась, но на ней могут быть "островки" -- места, не связанные друг с другом.
+	// чтобы это вылечить, делаем так: ищем при помощи bfs (поиска в глубину) самый большой остров и стираем все остальные.
+
+	char **used; // технический массив для bfs (0 -- что клетка не посещалась; 1 -- что клетка принадлежит острову №1 и т.д.).
+	used = malloc(sizeof(char*) * game_map -> size_y);
+	for (int y = 0; y < game_map -> size_y; ++y)
+	{
+		used[y] = malloc(sizeof(char) * game_map -> size_x);
+		for (int x = 0; x < game_map -> size_x; ++x)
+			used[y][x] = 0;
+	};
+
+	// размер наибольшего острова и номер наибольшего острова, соответственно
+	int max_size_of_island, nummer_of_max_island;
+	max_size_of_island = 0;
+	nummer_of_max_island = 0;
+
+	// нумеруем все острова и находим наибольший среди них
+	for (int y = 0; y < game_map -> size_y; ++y)
+		for (int x = 0; x < game_map -> size_x; ++x)
+		{
+			// рассматриваем только клетки, по которым можно ходить
+			if (game_map -> data[y][x].type == WALL_CELL)
+				continue;
+			
+			int size_of_island = 0;
+			//  ind -- это порядковый номер клетки, и он всегда уникален
+			int ind = y * game_map -> size_x + x;
+			_dfs(game_map, used, x, y, game_map -> size_x, game_map -> size_y, ind, &size_of_island);
+
+			if (size_of_island > max_size_of_island)
+			{
+				max_size_of_island = size_of_island;
+				nummer_of_max_island =  y * game_map -> size_x + x;
+			};
+		};
+
+	for (int y = 0; y < game_map -> size_y; ++y)
+		for (int x = 0; x < game_map -> size_x; ++x)
+		{
+			// замуровываем наглухо все острова, кроме наибольшего.
+			if (used[y][x] != nummer_of_max_island)
+				game_map -> data[y][x].type = WALL_CELL;
+		};
+
+
+	// чистим used
+	for (int y = 0; y < game_map -> size_y; ++y)
+		free(used[y]);
+	free(used);
+
 	return NO_ERRORS;
 };
 
@@ -271,9 +352,6 @@ void _cnt_boundaries(int blocks_num, int map_size_x, int map_size_y, int *block_
 */
 void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 {
-	srand(0); // инициализируем семя случайной генерации
-
-
 	// что здесь происходит?
 	// карта разбивается на прямоугольные блоки.
 	// внутри каждого такого блока лежит объект.

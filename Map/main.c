@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdlib.h>
 #include "Map.h"
+#include <time.h>
 
 int main(void)
 {
 	GameMap game_map;
 	
+	srand(1);
+
 	MapSettings settings;
 	settings.size_x = 50;
 	settings.size_y = 50;
