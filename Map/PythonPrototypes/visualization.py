@@ -5,12 +5,12 @@ from tkinter import Tk, Canvas
 import prototype
 
 # константы
-cells_x = 15    # размер ячейки в ширину
-cells_y = 15    # размер ячейки в длину
+cells_x = 16    # размер ячейки в ширину
+cells_y = 16    # размер ячейки в длину
 
 # объекты pygame
-size_y = 40
-size_x = 40
+size_y = 50
+size_x = 50
 window = window = tk.Tk()    # создаём окно ТKinter
 canvas = Canvas(window, width = size_x * cells_x, height = size_y * cells_y)
 
@@ -121,6 +121,8 @@ if __name__ == "__main__":
     test_map = read_map_from_file('test_map.txt')
     maps_objects = read_objects_from_file('objects.txt')
     print_map(test_map)
+
+    input() # делаем паузу, чтобы можно было посмотреть сначала на голый ландшафт
     print_objects(maps_objects)
     
     window.mainloop()   # отображаем всё вышеотрисованное
