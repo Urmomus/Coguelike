@@ -1,5 +1,5 @@
 #include "saver.h"
-#include "../Map/Cell/Cell.h"
+#include "../Map/src/Cell/Cell.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,7 +51,7 @@ GameMap load(GameMap map_data) {
     return res_map;
 }
 
-void save(GameMap *map_data) {
+int save(GameMap *map_data) {
     FILE * fp;
     char *c;
     int size = sizeof(GameMap); // количество записываемых байтов
@@ -70,4 +70,6 @@ void save(GameMap *map_data) {
         putc(*c++, fp);
     }
     fclose(fp);
+
+    return 1;
 }
