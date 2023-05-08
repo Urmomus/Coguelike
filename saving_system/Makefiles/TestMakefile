@@ -1,0 +1,19 @@
+TARGET = global_test
+CC = gcc
+
+
+TEST_HEADER_PREF = ./saving_system/tests/test_saving_system
+LIB_TEST_PREF = ./saving_system/tests
+HEADER_PREF = ./saving_system/
+
+${TARGET}: compileTests
+	./bin/${TARGET}
+
+compileTests: buildTests
+	${CC} ${TARGET}.c -I ${TEST_HEADER_PREF} -lTestSavingSystem -L ${LIB_TEST_PREF} -I ${HEADER_PREF} -lSavingSystem -L ./saving_system -o ./bin/${TARGET}
+
+buildTests:
+	cd ./saving_system/tests && make
+
+clean:
+	rm ${TARGET}
