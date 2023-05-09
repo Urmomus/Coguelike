@@ -104,7 +104,7 @@ void print_map(GameMap *game_map)
 				if (game_map -> data[y][x].unit -> unit_type == PLAYER)
 					printf("\033[40;31m@ ");
 				else
-					printf("\033[40;35mG");
+					printf("\033[40;35mG ");
 		};
 		printf("\n");
 	};

@@ -13,7 +13,8 @@ enum Errors			// возможные ошибки
 	SIZE_ERROR,					// размеры карт при копировании не совпадают
 	MONSTER_OR_ITEMS_LEN_ERROR, // ошибка при копировании карты: не совпадает число монстров / предметов
 	INVALID_DIRECTION,			// некорректный символ направления (должен быть: 'u', 'd', 'l', 'r')
-	MOVE_IS_IMPOSSIBLE,			// нельзя переместить юнита (в стену)
+	MOVE_IS_IMPOSSIBLE,			// нельзя переместить юнита (в стену или за край карты)
+	CELL_IS_BUSY,				// на клетке, куда пытаются привязать юнита, уже что-то / кто-то есть
 };
 
 // структура-контейнер для настроек компиляции
@@ -32,7 +33,104 @@ LandsapeSettings;
 const int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
 LandsapeSettings _std_settings = {36, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
-// функции
+// приватные функции
+
+/****
+	@brief проверяет координаты (х, у) на корректность
+	@param game_map игровая карта, на которой отмечена точка (х, у)
+	@param x координата по х
+	@param y координата по у
+	@return 1 -- если корректны, 0 -- если некорректны
+*/
+char _coords_are_correct(GameMap *game_map, int x, int y);
+
+/**
+ * @brief считает кол-во стен вокруг клетки
+ * @param game_map указатель на карту, где находится клетка
+ * @param x координата клетки по х
+ * @param y координата клетки по y
+ * @return код ошибки
+ */
+int _cnt_neighbours(GameMap *game_map, int x, int y, int *result);
+
+/***
+TODO: написать заголовок
+*/
+int _copy_map(GameMap *from, GameMap *to);
+
+/**
+ * @brief переводит карту в следующее состояние 
+ * @param game_map указатель на карту
+ * @param death_limit передать то, что поступило в generate_maps_landscape
+ * @param birth_limit передать то, что поступило в generate_maps_landscape
+ * @return код ошибки 
+ */
+int _next_state(GameMap *game_map);
+
+/***
+	@brief стандартная (т.е. рекурсивная) реализация поиска в ширину
+	@param game_map игровая карта, на которой выполняется dfs
+	@param used массив, где 0 -- клетка не посещалась, что-то ещё -- посещалась
+	@param x х текущей клетки
+	@param y y текущей клетки
+	@param size_x размер массива по x
+	@param size_y размер массива по у
+	@param nummer_of_island чем заполнять открытые территории, связанные с (x, y)
+	@param size_of_island кол-во клеток, привязанных к данной (передавать строго 0 (ноль)!!!)
+*/
+void _dfs(GameMap *game_map, char **used, int x, int y, int size_x, int size_y, int nummer_of_island, int *size_of_island);
+
+
+/***
+	@brief могильный ужас, а не функция: подбирает такие размеры прямоугольника, чтобы на карту влезло определённое число прямоугольников
+	@param blocks_num число прямоугольников
+	@param map_size_x размер карты по х
+	@param map_size_y размер карты по у
+	@param block_size_x размер прямоугольника по х
+	@param block_size_y размер прямоугольника по у
+	@param deep -- глубина рекурсии. Изначально равна нулю!
+*/
+void _cnt_boundaries(int blocks_num, int map_size_x, int map_size_y, int *block_size_x, int *block_size_y, unsigned int deep);
+
+/***
+	@brief функция-обобщения, которая может расставлять и монстров, и предметы на карте
+	@param game_map карта, где надо размещать
+	@param items_num кол-во размещаемых объектов
+	@param type: 'u' -- units, 'i' -- items.
+*/
+void _place_objects_on_map(GameMap *game_map, int objects_num, char type);
+
+/***
+	@brief перемещает юнита на одну клетку в указанном направлении
+	@param game_map карта, где находится юнит
+	@param ind индекс юнита в списке юнитов
+	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз.
+	@return код ошибки
+*/
+int _move_unit(GameMap *game_map, int ind, char dir);
+
+/******
+	@brief отвязывает юнита от клетки на карте 
+	@param game_map карта, где происходит действие
+	@param ind индекс юнита в массиве units_list
+	@return код ошибки	
+*/
+int _unbind_unit_from_cell(GameMap *game_map, int ind);
+
+/******
+	@brief привязывает юнита к клетке на карте 
+	@param game_map карта, где происходит действие
+	@param ind индекс юнита в массиве units_list
+	@param x координата по х клетки, к которой надо привязать юнита
+	@param y координата по y клетки, к которой надо привязать юнита
+	@return код ошибки	
+*/
+int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y);
+
+
+
+// реализации функций
+
 
 /****
 	@brief проверяет координаты (х, у) на корректность
@@ -90,6 +188,9 @@ int _cnt_neighbours(GameMap *game_map, int x, int y, int *result)
     return NO_ERRORS;
 };
 
+/***
+TODO: написать заголовок
+*/
 int _copy_map(GameMap *from, GameMap *to)
 {
 	if ((from -> size_x != to -> size_x) || (from -> size_y != to -> size_y))
@@ -116,6 +217,11 @@ int _copy_map(GameMap *from, GameMap *to)
 	return NO_ERRORS;
 };
 
+/*****
+	@brief чистит память, выделенную под карту (включая монстров и предметы, прицепленные к карте)
+	@param game_map карта
+	@return код ошибки
+*/
 int delete_map(GameMap *game_map)
 {	
 	// сначала чистим всю память, выделенную под клетки.
@@ -133,6 +239,12 @@ int delete_map(GameMap *game_map)
 	return NO_ERRORS;
 };
 
+/****
+	@brief инициализирует карту начальными значениями
+	@param game_map карта
+	@param settings настройки, из которых возьмутся начальные значения
+	@return код ошибки  
+*/
 int init_map(GameMap *game_map, MapSettings settings)
 {
 	// задаём карте указанные размеры
@@ -155,6 +267,12 @@ int init_map(GameMap *game_map, MapSettings settings)
 	
 	// выделяем память под юнитов
 	game_map -> units_list = malloc(sizeof(Unit) * game_map -> units_num);
+	
+	// изначально ни один из юнитов нигде не стоит
+	for (int i = 0; i < game_map -> units_num; ++i)
+	{
+		game_map -> units_list[i].x = game_map -> units_list[i].y = -1;
+	};
 
 	// выделяем память под клетки карты
 	game_map -> data = malloc(sizeof(Cell*) * game_map -> size_y);
@@ -278,6 +396,8 @@ int generate_maps_landscape(GameMap *game_map)
 			return err_code;
 	};
 
+
+	// TODO: вынести в отдельную функцию замуровывание островов
 	// на этом месте карта уже сгенерировалась, но на ней могут быть "островки" -- места, не связанные друг с другом.
 	// чтобы это вылечить, делаем так: ищем при помощи bfs (поиска в глубину) самый большой остров и стираем все остальные.
 
@@ -332,7 +452,7 @@ int generate_maps_landscape(GameMap *game_map)
 	return NO_ERRORS;
 };
 
-const unsigned int MAX_DEEP = 5;
+const unsigned int MAX_DEEP_CNT_BOUNDARIES = 5;
 /***
 	@brief могильный ужас, а не функция: подбирает такие размеры прямоугольника, чтобы на карту влезло определённое число прямоугольников
 	@param blocks_num число прямоугольников
@@ -346,7 +466,7 @@ void _cnt_boundaries(int blocks_num, int map_size_x, int map_size_y, int *block_
 {
 	static int min_diff = (1 << sizeof(int));
 
-	if (deep >= MAX_DEEP)
+	if (deep >= MAX_DEEP_CNT_BOUNDARIES)
 		return;
 
 	int a, b;
@@ -526,10 +646,25 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 	if (dir == 'd')	// вниз
 		y = y + 1;
 	
-	//if ()
+	// если упёрлись в край карты
+	if (!_coords_are_correct(game_map, x, y))
+		return MOVE_IS_IMPOSSIBLE;
+	
+	// если упёрлись в стену
+	if (game_map -> data[y][x].type == WALL_CELL)
+		return MOVE_IS_IMPOSSIBLE;
+	
+	if (game_map -> data[y][x].unit != NULL)
+	{
+		// здесь будет атака
+		// TODO
+	};
 
-	// всё прошло успешно, полёт нормальный
-	return NO_ERRORS;
+	// встаём на новую клетку
+	int err_code = _bind_unit_to_cell(game_map, ind, x, y);
+
+	// и возвращаем результаты оного действия
+	return err_code;
 };
 
 /***
@@ -544,3 +679,64 @@ int move_player(GameMap *game_map, char dir)
 	return _move_unit(game_map, PLAYER_INDEX, dir);
 };
 
+/******
+	@brief отвязывает юнита от клетки на карте 
+	@param game_map карта, где происходит действие
+	@param ind индекс юнита в массиве units_list
+	@return код ошибки	
+*/
+int _unbind_unit_from_cell(GameMap *game_map, int ind)
+{
+
+	// TODO: добавить проверку, что ind корректный
+
+	// получаем координаты клетки, где стоит юнит
+	int x = game_map -> units_list[ind].x;
+	int y = game_map -> units_list[ind].y;
+
+	// если юнит нигде не стоит, то он и так не привязан к клетке
+	if (x < 0 && y < 0)
+		return NO_ERRORS;
+
+	// отвязываем его от этой клетки
+	game_map -> data[y][x].unit = NULL;
+
+	// теперь юнит нигде не стоит
+	game_map -> units_list[ind].x = -1;
+	game_map -> units_list[ind].y = -1;
+
+	return NO_ERRORS;
+};
+
+/******
+	@brief привязывает юнита к клетке на карте 
+	@param game_map карта, где происходит действие
+	@param ind индекс юнита в массиве units_list
+	@param x координата по х клетки, к которой надо привязать юнита
+	@param y координата по y клетки, к которой надо привязать юнита
+	@return код ошибки	
+*/
+int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
+{
+	// проверяем, что клетка, куда привязываем юнита, существует
+	if (!_coords_are_correct(game_map, x, y))
+		return MOVE_IS_IMPOSSIBLE;
+
+	// проверяем, что клетка, куда привязываем юнита, пустая
+	if (game_map -> data[y][x].unit != NULL)
+		return CELL_IS_BUSY;
+	
+	// TODO: добавить проверку на некорректный индекс
+
+	// на всякий случай отвязываем юнита от той клетки, где он якобы стоит
+	_unbind_unit_from_cell(game_map, ind);
+
+	// и привязываем к указанной клетке
+	game_map -> data[y][x].unit = &(game_map -> units_list[ind]);
+	game_map -> units_list[ind].x = x;
+	
+	// и меняем юниту координаты
+	game_map -> units_list[ind].y = y;
+	
+	return NO_ERRORS;
+};
