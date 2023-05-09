@@ -12,6 +12,7 @@ enum Errors			// возможные ошибки
 	NO_ERRORS, 					// нет ошибок
 	SIZE_ERROR,					// размеры карт при копировании не совпадают
 	MONSTER_OR_ITEMS_LEN_ERROR, // ошибка при копировании карты: не совпадает число монстров / предметов
+	INVALID_DIRECTION,			// некорректный символ направления (должен быть: 'u', 'd', 'l', 'r')
 };
 
 // структура-контейнер для настроек компиляции
@@ -24,7 +25,11 @@ typedef struct
 } 
 LandsapeSettings;	
 
-LandsapeSettings _std_settings = {36, 3, 4, 5};
+
+// константы
+
+const int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
+LandsapeSettings _std_settings = {36, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
 /**
  * @brief считает кол-во стен вокруг клетки
@@ -457,7 +462,39 @@ int generate_maps_content(GameMap *game_map)
 	//generate_monsters(&game_map -> units_list, game_map -> units_num, game_map -> level);
 	//generate_loot(&game_map -> items_list, game_map -> items_num, game_map -> level);
 
+	// пока заколхожу, что все монстры -- гоблины, а игрок -- под индексом PLAYER_INDEX
+	for (int i = 0; i < game_map -> units_num; ++i)
+		game_map -> units_list[i].unit_type = GOBLIN;
+	game_map -> units_list[PLAYER_INDEX].unit_type = PLAYER;
+
 	_place_objects_on_map(game_map, game_map -> items_num, 'i');
 	_place_objects_on_map(game_map, game_map -> units_num, 'u');
 	return OK;
+};
+
+/***
+	@brief перемещает юнита на одну клетку в указанном направлении
+	@param game_map карта, где находится юнит
+	@param ind индекс юнита в списке юнитов
+	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз.
+	@return код ошибки
+*/
+int _move_unit(GameMap *game_map, int ind, char dir)
+{
+	// проверяем, что направление, куда пытаются переместить юнита, корректное
+	if (dir != 'l' && dir != 'r' && dir != 'u' && dir != 'd')
+		return INVALID_DIRECTION;
+	return NO_ERRORS;
+};
+
+/***
+	@brief перемещает игрока на одну клетку в указанном направлении
+	@param game_map карта, где находится игрок
+	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз.
+	@return код ошибки
+*/
+int move_player(GameMap *game_map, char dir)
+{
+	// игрок -- это просто юнит под индексом PLAYER_INDEX
+	return _move_unit(game_map, PLAYER_INDEX, dir);
 };

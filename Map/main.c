@@ -4,20 +4,25 @@
 #include "Map.h"
 #include <time.h>
 
+void print_map(GameMap *game_map);
+
 int main(void)
 {
+	// создаём карту
 	GameMap game_map;
 	
+	// подключаем случайные числа
 	srand(1);
 
+	// задаём настройки карты
 	MapSettings settings;
 	settings.size_x = 50;
 	settings.size_y = 50;
 	settings.level = 4;
 
-	// пока нет функций -- зададим вручную
+	// инициализируем карту
 	init_map(&game_map, settings);
-
+	// генерируем поверхность карты
 	int err_code = generate_maps_landscape(&game_map);
 	if (err_code)
 	{
@@ -25,6 +30,7 @@ int main(void)
 		return err_code;
 	};
 	
+	// генерируем мобов & предметы
 	err_code = generate_maps_content(&game_map);
 	if(err_code)
 	{
@@ -32,33 +38,26 @@ int main(void)
 		return err_code;
 	};
 
-	// сохраняем ландшафт карты в "test_map.txt"
-	char *filename = "test_map.txt";
-	FILE *f_out = fopen(filename, "w");
-	
-	fprintf(f_out, "%d\n%d\n", game_map.size_y, game_map.size_x);
-	for (int y = 0; y < game_map.size_y; ++y)
-		for (int x = 0; x < game_map.size_x; ++x)
-			fprintf(f_out, "%d\n", game_map.data[y][x].type);
+	// основной цикл
+	while (true)
+	{
+		system("clear");
+		char cmd;
+		print_map(&game_map);
+		scanf("%c", &cmd);
 
-	fclose(f_out);
+		// выход из игры
+		if (cmd == 'e')
+			return 0;
+		
+		if (cmd == 'w');	// вверх
+		if (cmd == 'a');	// влево
+		if (cmd == 's');	// вниз
+		if (cmd == 'd');	// вправо
+	};
 	
-	// сохраняем объекты на карте в "objects.txt"
-	char *filename_2 = "objects.txt";
-	f_out = fopen(filename_2, "w");
 
-	for (int y = 0; y < game_map.size_y; ++y)
-		for (int x = 0; x < game_map.size_x; ++x)
-		{
-			// работаем только со случаем, когда на клетке есть предмет
-			if (game_map.data[y][x].item != NULL)
-				fprintf(f_out, "%d\n%d\n%s\n", x, y, "item");
-			if (game_map.data[y][x].unit != NULL)
-				fprintf(f_out, "%d\n%d\n%s\n", x, y, "unit");
-		}
 
-	fclose(f_out);
-	
 	// удаляем карту
 	err_code = delete_map(&game_map);
 	if (err_code)
@@ -68,4 +67,28 @@ int main(void)
 	};
 
 	return 0;
+};
+
+void print_map(GameMap *game_map)
+{
+	for (int y = 0; y < game_map -> size_y; ++y)
+	{
+		for (int x = 0; x < game_map -> size_x; ++x)
+		{
+			if (game_map -> data[y][x].type == WALL_CELL)
+			{
+				printf("\033[37;40m# ");
+				continue;
+			};
+			
+			if (game_map -> data[y][x].unit == NULL)
+				printf("\033[37;40m. ");
+			else
+				if (game_map -> data[y][x].unit -> unit_type == PLAYER)
+					printf("\033[40;31m@ ");
+				else
+					printf("\033[40;35mG");
+		};
+		printf("\n");
+	};
 };

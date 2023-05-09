@@ -7,6 +7,8 @@
 #include "units.h"
 #include "items.h"
 
+// структуры
+
 /**
  * @brief структура настроек для генерации карты
  * @param size_x размер карты по оси оХ
@@ -43,6 +45,8 @@ typedef struct
 	int items_num;		// кол-во предметов, что есть на карте
 	Item *items_list;	// список всех предметов
 } GameMap;
+
+// функции
 
 /**
  * @brief генерирует ландашфт игровой карты (на основе алгоритма игры "жизнь")
@@ -102,5 +106,13 @@ int init_map(GameMap *game_map, MapSettings settings);
  * @return код ошибки
 */
 int delete_map(GameMap *game_map);
+
+/***
+	@brief перемещает игрока на одну клетку в указанном направлении
+	@param game_map карта, где находится игрок
+	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз.
+	@return код ошибки
+*/
+int move_player(GameMap *game_map, char dir);
 
 #endif
