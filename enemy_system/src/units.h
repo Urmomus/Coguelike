@@ -40,9 +40,9 @@ typedef enum
 typedef struct
 {
     UnitType unit_type;
-    // Effect *effects;
     Inventory inventory;
     EquippedSlots equipped_slots;
+    int x, y;
     float miss_chance;
     char *name;
     int lvl;

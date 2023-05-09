@@ -97,6 +97,8 @@ ExceptionStatus _generate_monster(Unit *monster, int level)
     _generate_monster_dmg(monster);
     _generate_monster_hp(monster);
     _generate_monster_name(monster);
+    monster->x = -1;
+    monster->y = -1;
     // monster->inventory = NULL; TODO: ЧЁТ СДЕЛАЙ
     // monster->equipped_slots = NULL;
 }
