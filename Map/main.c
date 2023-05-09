@@ -50,10 +50,27 @@ int main(void)
 		if (cmd == 'e')
 			return 0;
 		
-		if (cmd == 'w');	// вверх
-		if (cmd == 'a');	// влево
-		if (cmd == 's');	// вниз
-		if (cmd == 'd');	// вправо
+		// вверх
+		if (cmd == 'w')
+			err_code = move_player(&game_map, 'u');
+
+		// влево
+		if (cmd == 'a')
+			err_code = move_player(&game_map, 'l');
+			
+		// вниз
+		if (cmd == 's')
+			err_code = move_player(&game_map, 'd');
+
+		// вправо
+		if (cmd == 'd')
+			err_code = move_player(&game_map, 'r');
+
+		if(err_code)
+		{
+			printf("код ошибки: %d\n\n", err_code);
+			return err_code;
+		};
 	};
 	
 

@@ -13,6 +13,7 @@ enum Errors			// возможные ошибки
 	SIZE_ERROR,					// размеры карт при копировании не совпадают
 	MONSTER_OR_ITEMS_LEN_ERROR, // ошибка при копировании карты: не совпадает число монстров / предметов
 	INVALID_DIRECTION,			// некорректный символ направления (должен быть: 'u', 'd', 'l', 'r')
+	MOVE_IS_IMPOSSIBLE,			// нельзя переместить юнита (в стену)
 };
 
 // структура-контейнер для настроек компиляции
@@ -30,6 +31,25 @@ LandsapeSettings;
 
 const int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
 LandsapeSettings _std_settings = {36, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
+
+// функции
+
+/****
+	@brief проверяет координаты (х, у) на корректность
+	@param game_map игровая карта, на которой отмечена точка (х, у)
+	@param x координата по х
+	@param y координата по у
+	@return 1 -- если корректны, 0 -- если некорректны
+*/
+char _coords_are_correct(GameMap *game_map, int x, int y)
+{
+	if (x < 0 || x >= game_map -> size_x)
+		return 0;
+	if (y < 0 || y >= game_map -> size_y)
+		return 0;
+	
+	return 1;
+};
 
 /**
  * @brief считает кол-во стен вокруг клетки
@@ -54,8 +74,8 @@ int _cnt_neighbours(GameMap *game_map, int x, int y, int *result)
                 continue;
             };
             
-            if ((neigbour_x < 0) || (neigbour_y < 0) || (neigbour_x >= game_map -> size_x) || (neigbour_y >= game_map -> size_y))
-            {
+            if(!_coords_are_correct(game_map, neigbour_x, neigbour_y))
+			{
                 // если сосед -- край карты, то засчитываем
                 *result += 1;
                 continue;
@@ -218,10 +238,10 @@ int _next_state(GameMap *game_map)
 */
 void _dfs(GameMap *game_map, char **used, int x, int y, int size_x, int size_y, int nummer_of_island, int *size_of_island)
 {
-	if (x >= size_x || x < 0) // вышли за пределы карты по х
+
+	if (!_coords_are_correct(game_map, x, y))	// вышли за пределы карты
 		return;
-	if (y >= size_y || y < 0) // вышли за пределы карты по у
-		return;
+	
 	if (game_map -> data[y][x].type == WALL_CELL)	// попали в стену
 		return;
 	if (used[y][x] != 0) 		// эта клетка уже посчитана
@@ -441,7 +461,12 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 					if (type == 'i')
 						game_map -> data[y][x].item = &(game_map -> items_list[i]);
 					else
+					{
 						game_map -> data[y][x].unit = &(game_map -> units_list[i]);
+						// также сохраняем юниту координаты, куда его разместили
+						game_map -> units_list[i].x = x;
+						game_map -> units_list[i].y = y;
+					};
 					//printf("Объект %d -- на (%d, %d)\n", i, x, y);
 				};
 				++now_ind;
@@ -484,6 +509,26 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 	// проверяем, что направление, куда пытаются переместить юнита, корректное
 	if (dir != 'l' && dir != 'r' && dir != 'u' && dir != 'd')
 		return INVALID_DIRECTION;
+
+	int x, y;	// текущие координаты юнита
+	x = game_map -> units_list[ind].x;
+	y = game_map -> units_list[ind].y;
+
+	if (dir == 'l')	// влево
+		x = x - 1;
+
+	if (dir == 'r')	// вправо
+		x = x + 1;
+
+	if (dir == 'u')	// вверх
+		y = y - 1;	
+	
+	if (dir == 'd')	// вниз
+		y = y + 1;
+	
+	//if ()
+
+	// всё прошло успешно, полёт нормальный
 	return NO_ERRORS;
 };
 
@@ -498,3 +543,4 @@ int move_player(GameMap *game_map, char dir)
 	// игрок -- это просто юнит под индексом PLAYER_INDEX
 	return _move_unit(game_map, PLAYER_INDEX, dir);
 };
+
