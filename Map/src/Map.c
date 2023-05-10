@@ -818,6 +818,26 @@ void move_monsters(GameMap *game_map)
 		if (!not_need_to_continue)
 			continue;
 		
-		printf("двигается монстр номер %d\n", ind);
+		// TODO: снести нахуй: это для тестов
+		if (ind != 1)
+			continue;
+
+		//эхо-печать для тестов
+		//printf("двигается монстр номер %d\n", ind);
+		
+		
+		char direction = _cnt_direction_for_move(game_map, ind);
+		_move_unit(game_map, ind, direction);
 	};
+};
+
+/************
+	@brief определяет направление, в котором должен двигаться монстр, и возвращает оное направление
+	@param game_map игровая карта, где происходит действие
+	@param ind индекс монстра, который ориентируется на местности
+	@param char символ направления: один из {'l', 'r', 'd', 'u'}
+*/
+char _cnt_direction_for_move(GameMap *game_map, int ind)
+{
+	return 'd';
 };

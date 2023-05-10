@@ -38,14 +38,21 @@ int main(void)
 		return err_code;
 	};
 
+	int used = 0;
+
+	print_map(&game_map);
+
 	// основной цикл
 	while (true)
 	{
-		system("clear");
 		char cmd;
-		print_map(&game_map);
+		scanf("%c", &cmd);
+
+		system("clear");
+
 		move_monsters(&game_map);
-		
+
+		/*
 		for (int ind = 1; ind < game_map.units_num; ++ind)
 		{
 			char can_see = 0;
@@ -60,8 +67,7 @@ int main(void)
 			if (can_see)
 				printf("Monster #%d can see player\n", ind);
 		};
-
-		scanf("%c", &cmd);
+		*/
 
 		// выход из игры
 		if (cmd == 'e')
@@ -86,13 +92,13 @@ int main(void)
 		// ждать
 		if (cmd == 'e');
 
-
-
 		if(err_code)
 		{
 			printf("код ошибки: %d\n\n", err_code);
 			return err_code;
 		};
+
+		print_map(&game_map);
 	};
 	
 
