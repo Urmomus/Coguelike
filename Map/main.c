@@ -44,6 +44,23 @@ int main(void)
 		system("clear");
 		char cmd;
 		print_map(&game_map);
+		move_monsters(&game_map);
+		
+		for (int ind = 1; ind < game_map.units_num; ++ind)
+		{
+			char can_see = 0;
+			
+			err_code = _can_see_player(&game_map, ind, &can_see);
+			if (err_code)
+			{
+				printf("Произошла ошибка №%d!\n", err_code);
+				return 1;
+			};
+
+			if (can_see)
+				printf("Monster #%d can see player\n", ind);
+		};
+
 		scanf("%c", &cmd);
 
 		// выход из игры
@@ -65,6 +82,11 @@ int main(void)
 		// вправо
 		if (cmd == 'd')
 			err_code = move_player(&game_map, 'r');
+
+		// ждать
+		if (cmd == 'e');
+
+
 
 		if(err_code)
 		{

@@ -115,4 +115,20 @@ int delete_map(GameMap *game_map);
 */
 int move_player(GameMap *game_map, char dir);
 
+/***
+	@brief определяет, может ли юнит увидеть игрока
+	@param game_map игровая карта, где происходит действие
+	@param ind индекс монстра
+	@param ans 1, если может, и 0, если не может
+	@return код ошибки
+	TODO: сделать приватной (вынести в Map.c)
+*/
+int _can_see_player(GameMap *game_map, int ind, char *ans);
+
+/*******
+	@brief передвигает монстров на карте в сторону игрока, если игрок находится в их поле зрения
+	@param game_map карта, где происходит действие
+*/
+void move_monsters(GameMap *game_map);
+
 #endif

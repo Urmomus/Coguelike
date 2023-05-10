@@ -15,6 +15,7 @@ enum Errors			// возможные ошибки
 	INVALID_DIRECTION,			// некорректный символ направления (должен быть: 'u', 'd', 'l', 'r')
 	MOVE_IS_IMPOSSIBLE,			// нельзя переместить юнита (в стену или за край карты)
 	CELL_IS_BUSY,				// на клетке, куда пытаются привязать юнита, уже что-то / кто-то есть
+	INVALID_INDEX,				// ошибка индексации при обращении к units_list или к items_list
 };
 
 // структура-контейнер для настроек компиляции
@@ -127,7 +128,14 @@ int _unbind_unit_from_cell(GameMap *game_map, int ind);
 */
 int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y);
 
-
+/********
+	@brief определяет, является ли индекс предмета / монстра корректным
+	@param game_map карта, где происходит действие
+	@param ind индекс предмета / монстра
+	@param type 'u', если юнит, 'i', если предмет
+	@return 1, если индекс корректен, и 0 -- в обратном случае
+*/
+int _index_is_correct(GameMap *game_map, int ind, char type);
 
 // реализации функций
 
@@ -739,4 +747,77 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 	game_map -> units_list[ind].y = y;
 	
 	return NO_ERRORS;
+};
+
+
+/***
+	@brief определяет, может ли юнит увидеть игрока
+	@param game_map игровая карта, где происходит действие
+	@param ind индекс монстра
+	@param ans 1, если может, и 0, если не может
+	@return код ошибки
+	TODO: сделать приватной (вынести в Map.c)
+*/
+int _can_see_player(GameMap *game_map, int ind, char *ans)
+{
+	const int RADIUS_OF_SIGHT = 4;
+
+	if (!_index_is_correct(game_map, ind, 'u'))
+		return INVALID_INDEX;
+
+	// считаем координаты игрока
+	int x1 = game_map -> units_list[PLAYER_INDEX].x;
+	int y1 = game_map -> units_list[PLAYER_INDEX].y;
+
+	// считаем координаты юнита
+	int x2 = game_map -> units_list[ind].x;
+	int y2 = game_map -> units_list[ind].y;
+
+	// считаем расстояние между юнитом и игроком
+	float d = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+	
+	// если расстояние меньше, чем радиус, то 1, иначе 0
+	*ans = ((int)d < RADIUS_OF_SIGHT);
+
+	return NO_ERRORS;
+};
+
+/********
+	@brief определяет, является ли индекс предмета / монстра корректным
+	@param game_map карта, где происходит действие
+	@param ind индекс предмета / монстра
+	@param type 'u', если юнит, 'i', если предмет
+	@return 1, если индекс корректен, и 0 -- в обратном случае
+*/
+int _index_is_correct(GameMap *game_map, int ind, char type)
+{
+	int max_val;
+	if (type == 'u')
+		max_val = game_map -> units_num;
+	else
+		max_val = game_map -> items_num;
+	
+	if (ind < 0 || ind >= max_val)
+		return 0;
+	
+	return 1;
+};
+
+
+/*******
+	@brief передвигает монстров на карте в сторону игрока, если игрок находится в их поле зрения
+	@param game_map карта, где происходит действие
+*/
+void move_monsters(GameMap *game_map)
+{
+	// с единицы -- потому что нулевой -- игрок
+	for (int ind = 1; ind < game_map -> units_num; ++ind)
+	{
+		char not_need_to_continue; 
+		_can_see_player(game_map, ind, &not_need_to_continue);
+		if (!not_need_to_continue)
+			continue;
+		
+		printf("двигается монстр номер %d\n", ind);
+	};
 };
