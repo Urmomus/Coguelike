@@ -148,22 +148,34 @@ int _test_delete_map(char **message)
 int test_Map(char **message)
 {
     if (_test_game_is_finished(message) == 1)
+    {
+        printf("%s", *message);
         return 1;
-
+    };
     if (_test_get_map_state(message) == 1)
+    {
+        printf("%s", *message);
         return 1;
-    
+    };
     if (_test_set_map_state(message) == 1)
+    {
+        printf("%s", *message);
         return 1;
-    
+    };
     if (_test_init_map(message) == 1)
+    {
+        printf("%s", *message);
         return 1;
-    
+    };
     if (_test_delete_map(message) == 1)
+    {
+        printf("%s", *message);
         return 1;
-    
+    };
     if (_test_generate_map_landscape(message) == 1)
+    {
+        printf("%s", *message);
         return 1;
-
+    };
     return 0;
 };

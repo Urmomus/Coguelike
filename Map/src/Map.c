@@ -12,7 +12,7 @@ enum Errors			// возможные ошибки
 	NO_ERRORS, 					// нет ошибок
 	SIZE_ERROR,					// размеры карт при копировании не совпадают
 	MONSTER_OR_ITEMS_LEN_ERROR, // ошибка при копировании карты: не совпадает число монстров / предметов
-	INVALID_DIRECTION,			// некорректный символ направления (должен быть: 'u', 'd', 'l', 'r')
+	INVALID_DIRECTION,			// некорректный символ направления (должен быть: 'u', 'd', 'l', 'r', 's')
 	MOVE_IS_IMPOSSIBLE,			// нельзя переместить юнита (в стену или за край карты)
 	CELL_IS_BUSY,				// на клетке, куда пытаются привязать юнита, уже что-то / кто-то есть
 	INVALID_INDEX,				// ошибка индексации при обращении к units_list или к items_list
@@ -105,7 +105,7 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type);
 	@brief перемещает юнита на одну клетку в указанном направлении
 	@param game_map карта, где находится юнит
 	@param ind индекс юнита в списке юнитов
-	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз.
+	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз, 's' -- стоять.
 	@return код ошибки
 */
 int _move_unit(GameMap *game_map, int ind, char dir);
@@ -136,6 +136,19 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y);
 	@return 1, если индекс корректен, и 0 -- в обратном случае
 */
 int _index_is_correct(GameMap *game_map, int ind, char type);
+
+/************
+	@brief определяет направление, в котором должен двигаться монстр, и возвращает оное направление
+	@param game_map игровая карта, где происходит действие
+	@param ind индекс монстра, который ориентируется на местности
+	@param char символ направления: один из {'l', 'r', 'd', 'u', 's'}
+*/
+char _cnt_direction_for_move(GameMap *game_map, int ind);
+
+
+
+
+
 
 // реализации функций
 
@@ -629,14 +642,17 @@ int generate_maps_content(GameMap *game_map)
 	@brief перемещает юнита на одну клетку в указанном направлении
 	@param game_map карта, где находится юнит
 	@param ind индекс юнита в списке юнитов
-	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз.
+	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз, 's' -- стоять.
 	@return код ошибки
 */
 int _move_unit(GameMap *game_map, int ind, char dir)
 {
 	// проверяем, что направление, куда пытаются переместить юнита, корректное
-	if (dir != 'l' && dir != 'r' && dir != 'u' && dir != 'd')
+	if (dir != 'l' && dir != 'r' && dir != 'u' && dir != 'd' && dir != 's')
 		return INVALID_DIRECTION;
+
+	if (dir == 's')	// если стоим -- ничего не меняется; так не будем же лишний раз ничего менять
+		return NO_ERRORS;
 
 	int x, y;	// текущие координаты юнита
 	x = game_map -> units_list[ind].x;
@@ -653,7 +669,7 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 	
 	if (dir == 'd')	// вниз
 		y = y + 1;
-	
+
 	// если упёрлись в край карты
 	if (!_coords_are_correct(game_map, x, y))
 		return MOVE_IS_IMPOSSIBLE;
@@ -678,7 +694,7 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 /***
 	@brief перемещает игрока на одну клетку в указанном направлении
 	@param game_map карта, где находится игрок
-	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз.
+	@param dir направление, куда перемещаться: 'l' -- влево, 'r' -- вправо, 'u' -- вверх, 'd' -- вниз, 's' -- стоять.
 	@return код ошибки
 */
 int move_player(GameMap *game_map, char dir)
@@ -750,6 +766,7 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 };
 
 
+const int _RADIUS_OF_SIGHT = 10;	// радиус взора для монстров
 /***
 	@brief определяет, может ли юнит увидеть игрока
 	@param game_map игровая карта, где происходит действие
@@ -760,8 +777,6 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 */
 int _can_see_player(GameMap *game_map, int ind, char *ans)
 {
-	const int RADIUS_OF_SIGHT = 4;
-
 	if (!_index_is_correct(game_map, ind, 'u'))
 		return INVALID_INDEX;
 
@@ -777,7 +792,7 @@ int _can_see_player(GameMap *game_map, int ind, char *ans)
 	float d = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 	
 	// если расстояние меньше, чем радиус, то 1, иначе 0
-	*ans = ((int)d < RADIUS_OF_SIGHT);
+	*ans = ((int)d < _RADIUS_OF_SIGHT);
 
 	return NO_ERRORS;
 };
@@ -831,13 +846,224 @@ void move_monsters(GameMap *game_map)
 	};
 };
 
+// структура клетки для реализации BFS
+typedef struct
+{
+	int dist;		// расстояние от монстра
+	int bef;		// индекс предыдущей клетки
+	// координаты клетки
+	int x;
+	int y;
+}
+_Direction;
+
 /************
 	@brief определяет направление, в котором должен двигаться монстр, и возвращает оное направление
 	@param game_map игровая карта, где происходит действие
 	@param ind индекс монстра, который ориентируется на местности
-	@param char символ направления: один из {'l', 'r', 'd', 'u'}
+	@return символ направления: один из {'l', 'r', 'd', 'u', 's'}
 */
 char _cnt_direction_for_move(GameMap *game_map, int ind)
 {
-	return 'd';
+	// сиё чудо работает на алгоритме BFS (поиск в ширину)
+	
+	// технический массив used для классической реализации BFS'a	
+	char **used;
+
+	// инициализируем used нулями
+	used = malloc(sizeof(char*) * game_map -> size_y);
+	for (int y = 0; y < game_map -> size_y; ++y)
+	{
+		used[y] = malloc(sizeof(char) * game_map -> size_x);
+		for (int x = 0; x < game_map -> size_x; ++x)
+			used[y][x] = 0;
+	};
+
+	// клетки, по которым попытается пройти монстр (технический массив для классического BFS)
+	_Direction *dirs; 
+	int dirs_size;	// длина массива dirs, 
+	int real_size;	// реальная длина массива dirs (т.к. из-за особенностей
+	// языка С память будем выделять с некоторым запасом)
+	int now_elem;	// первый необработанный элемент в массиве dirs
+
+	// инициализируем массив dirs
+	dirs_size = 4 * _RADIUS_OF_SIGHT * _RADIUS_OF_SIGHT + 10;	// площадь круга, образуемого радиусом движения, + запас.
+	real_size = 1;	// изначально такой элемент один: клетка, где стоит сам монстр
+	now_elem = 0;	// первый элемент -- и есть первый необработанный
+	dirs = malloc(sizeof(_Direction) * dirs_size);
+	
+	// клетка, где стоит сам монстр
+	dirs[now_elem].x = game_map -> units_list[ind].x; // координаты берём у монстра
+	dirs[now_elem].y = game_map -> units_list[ind].y;
+	dirs[now_elem].dist = 0;	// а расстояние -- 0, ибо монстр на ней
+	dirs[now_elem].bef = 0;		// предущей клетки не было -- ставим её саму себе в отцы
+
+	while (now_elem < real_size)
+	{
+		// вынимаем координаты и расстояние из рассматриваемой клетки
+		int now_x = dirs[now_elem].x;
+		int now_y = dirs[now_elem].y;
+		int now_dist = dirs[now_elem].dist;
+		used[now_y][now_x] = 1;	// отмечаем рассматриваемую клетку как посещённую
+
+		// объявляем координаты следующих клеток, на которые попытаемся встать
+		int x[4];
+		int y[4];
+
+		x[0] = now_x;		y[0] = now_y + 1;
+		x[1] = now_x;		y[1] = now_y - 1;
+		x[2] = now_x + 1;	y[2] = now_y;
+		x[3] = now_x - 1;	y[3] = now_y;
+
+		for (int i = 0; i < 4; ++i)
+		{
+			// если можно встать на клетку (x{i}, y{i})
+			// и на неё ещё не вставали
+			// и она в пределах просчитываемого радиуса движения
+			// и не упёрлись в стенку
+			if 
+			(
+			_coords_are_correct(game_map, x[i], y[i])
+			 &&
+			!used[y[i]][x[i]]
+			 &&
+			(now_dist + 1 <= _RADIUS_OF_SIGHT)
+			 &&
+			(game_map -> data[y[i]][x[i]].type != WALL_CELL)
+			)
+			{
+				++real_size; // размер увеличивается: вставляем в dirs новую клетку
+
+				if (real_size == dirs_size)	// размер массива надо увеличить
+				{
+					dirs_size *= 2;		// на побольше
+					dirs = realloc(dirs, dirs_size * sizeof(_Direction));
+				};
+
+				dirs[real_size - 1].x = x[i];
+				dirs[real_size - 1].y = y[i];
+				dirs[real_size - 1].bef = now_elem;
+				dirs[real_size - 1].dist = now_dist + 1;
+			};
+		};
+
+		// идём рассматривать следующую клетку
+		++now_elem;
+	};
+
+	/*
+	// эхо-печать
+	for (int i = 0; i < real_size; ++i)
+	{
+		printf("%d: (%d, %d) на расстоянии %d, пришли из %d\n", 
+			i,
+			dirs[i].x,
+			dirs[i].y,
+			dirs[i].dist,
+			dirs[i].bef);
+	};
+	char tmp;
+	scanf("%c", &tmp);
+	*/
+
+	// теперь в массиве dirs лежат все клетки в пределах _RADIUS_OF_SIGHT, на которые может прийти монстр.
+	// осталось только построить машрут до игрока
+
+	// ищем клетку, на которой стоит игрок (если мы до неё дошли)
+	int finish_cell = -1;	// клетка, на которой стоит игрок
+
+	for (int i = 0; i < real_size; ++i)
+	{
+		if ((dirs[i].x == game_map -> units_list[PLAYER_INDEX].x) && (dirs[i].y == game_map -> units_list[PLAYER_INDEX].y))
+		{
+			finish_cell = i;
+			break;
+		};
+	};
+
+	// если мы не смогли, даже в теории, дойти до игрока -- то монстр стоит на месте
+	if (finish_cell < 0)
+	{
+		// удаляем used
+		for (int y = 0; y < game_map -> size_y; ++y)
+			free(used[y]);
+		free(used);
+
+		// удаляем dirs
+		free(dirs);
+		
+		// монстр стоит на месте
+		return 's';
+	};
+
+	// если игрок оказался в клетке, до которой монстр может дойти, -- прокладываем к нему путь путём анализа массива dirs
+	int now_cell = finish_cell;	// текущая клетка (идём как бы "с конца": от игрока к монстру)
+	int bef_cell = finish_cell;	// предыдущая клетка
+	
+	char ans = 's';	// направление, которое будем возвращать (на всякий случай инициализируем "стоять")
+
+	while (dirs[now_cell].bef != now_cell)	// пока не придём к клетке, где стоит монстр
+	{
+		now_cell = dirs[now_cell].bef;	// рассматриваем предыдущую клетку пути 
+		// и вычисляем, куда мы сместились относительно предыдущей клетки
+		if (dirs[now_cell].x < dirs[bef_cell].x)
+			ans = 'l';
+		else
+		if (dirs[now_cell].x > dirs[bef_cell].x)
+			ans = 'r';
+		else
+		if (dirs[now_cell].y < dirs[bef_cell].y)
+			ans = 'u';
+		else
+		if (dirs[now_cell].y > dirs[bef_cell].y)
+			ans = 'd';
+
+		bef_cell = now_cell;	// текущая клетка становится предыдущей для следующей
+
+		//printf("%c <- ", ans);	// эхо-печать
+	};
+
+	// итак, мы получили последний шаг от игрока к монстру (он лежит в ans).
+	// чтобы он стал первым шагом от монстра к игроку -- надо инвертировать его направление.
+
+	switch (ans)
+	{
+		case 'l':
+		{
+			ans = 'r';
+			break;
+		}
+		case 'r':
+		{
+			ans = 'l';
+			break;
+		};
+		case 'u':
+		{
+			ans = 'd';
+			break;
+		};
+		case 'd':
+		{
+			ans = 'u';
+			break;
+		}
+		default:
+		{
+			ans = 's';		// такого быть не может, но платят нам построчно, поэтому будет)))
+			break;
+		};
+	};
+
+	// не забываем почистить память
+
+	// удаляем used
+	for (int y = 0; y < game_map -> size_y; ++y)
+		free(used[y]);
+	free(used);
+
+	// удаляем dirs
+	free(dirs);
+
+	return ans;
 };
