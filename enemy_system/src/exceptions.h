@@ -10,7 +10,12 @@ typedef enum
     NOT_EQUIPPABLE,   // предмет не является экипируемым
     INVALID_LEVEL,
     INVALID_SIZE,
-    INVALID_DAMAGE
+    INVALID_DAMAGE,
+    INVALID_EFFECT,
+    SLOT_IS_USED,
+    SLOT_IS_NOT_USED,
+    INVALID_ITEM_INDEX,
+    ITEM_IS_EQUIPPED
 } ExceptionStatus;
 
 #endif
