@@ -80,15 +80,13 @@ ExceptionStatus generate_monsters(Unit *monsters, int size, int level);
 ExceptionStatus take_damage(Unit *unit, int damage);
 ExceptionStatus use(Unit *unit, Item *item);
 ExceptionStatus equip(Unit *unit, Item *item);
+ExceptionStatus unequip(Unit *unit, ItemType item_type);
+ExceptionStatus equip_from_inventory(Unit *unit, int item_index);
 ExceptionStatus add_to_inventory(Unit *unit, Item item);
+ExceptionStatus delete_from_inventory(Unit *unit, int item_index);
 ExceptionStatus generate_player(Unit *player, char *player_name);
-
-// /**
-//  * @brief move_monster функция передвигает противника по направлению к игроку
-//  * @param monster передвигаемый противник
-//  * @param player игрок
-//  * @return возвращает код ошибки
-//  */
-// ExceptionStatus move_monster(Unit *monster, Unit *player);
+ExceptionStatus is_equipped(Unit *unit, int item_index, bool *is_equipped);
+Item *get_item_by_slot(Unit *unit, ItemType type);
+Item *get_item_by_index(Unit *unit, int index);
 
 #endif

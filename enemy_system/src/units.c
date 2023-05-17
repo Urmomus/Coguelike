@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdlib.h>
 #include <string.h>
 #include "units.h"
 
@@ -122,15 +121,83 @@ ExceptionStatus _apply_effect(Unit *unit, Effects effects)
 
     case DMG_UP:
         unit->dmg += effect.scale;
+        break;
 
     case DEFENSE_UP:
         unit->defense += effect.scale;
+        break;
 
     default:
+        return INVALID_EFFECT;
         break;
     }
 }
 
+ExceptionStatus _unapply_effect(Unit *unit, Effects effects)
+{
+    Effect effect = effects.effect_list[0];
+    switch (effect.type)
+    {
+    case HEAL:
+        unit->hp -= effect.scale;
+        break;
+
+    case HP_UP:
+        unit->hp -= effect.scale;
+        break;
+
+    case DMG_UP:
+        unit->dmg -= effect.scale;
+        break;
+
+    case DEFENSE_UP:
+        unit->defense -= effect.scale;
+        break;
+
+    default:
+        return INVALID_EFFECT;
+        break;
+    }
+}
+
+Item *get_item_by_index(Unit *unit, int index)
+{
+    if (index >= unit->inventory.current_size)
+        return NULL;
+
+    return unit->inventory.items + index;
+}
+
+Item *get_item_by_slot(Unit *unit, ItemType type)
+{
+    switch (type)
+    {
+    case HEAD:
+        return unit->equipped_slots.head;
+        break;
+
+    case BODY:
+        return unit->equipped_slots.body;
+        break;
+
+    case RIGHT_HAND:
+        return unit->equipped_slots.right_hand;
+        break;
+
+    case LEFT_HAND:
+        return unit->equipped_slots.left_hand;
+        break;
+
+    case LEGS:
+        return unit->equipped_slots.legs;
+        break;
+
+    default:
+        return NULL;
+        break;
+    }
+    return OK;
+}
 
 ExceptionStatus generate_monsters(Unit *monsters, int size, int level)
 {
@@ -148,9 +215,15 @@ ExceptionStatus generate_monsters(Unit *monsters, int size, int level)
 
 ExceptionStatus generate_player(Unit *player, char *player_name)
 {
-    EquippedSlots slots = {0};
-    Item *items = {0};
+    Item items[256] = {0};
     Inventory inventory = {items, 0, 256};
+    EquippedSlots slots = {
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+    };
 
     player->unit_type = PLAYER;
     player->kills = 0;
@@ -160,8 +233,8 @@ ExceptionStatus generate_player(Unit *player, char *player_name)
     player->hp = 10;
     player->dmg = 2;
     player->miss_chance = 0.1;
-    // player->equipped_slots = &slots; TODO: ТУТЧЁТОСДЕЛАЙ
-    // player->inventory = &inventory;
+    player->equipped_slots = slots;
+    player->inventory = inventory;
 
     return OK;
 }
@@ -208,6 +281,16 @@ ExceptionStatus add_to_inventory(Unit *unit, Item item)
 
 ExceptionStatus delete_from_inventory(Unit *unit, int item_index)
 {
+    bool equipped = false;
+    int exception;
+
+    exception = is_equipped(unit, item_index, &equipped);
+    if (exception)
+        return exception;
+
+    if (equipped)
+        return ITEM_IS_EQUIPPED;
+
     unit->inventory.current_size -= 1;
     for (int i = unit->inventory.current_size - 1; i > item_index; i++)
     {
@@ -220,34 +303,181 @@ ExceptionStatus equip(Unit *unit, Item *item)
     switch (item->type)
     {
     case HEAD:
+        if (unit->equipped_slots.head != NULL)
+            return SLOT_IS_USED;
+
         unit->equipped_slots.head = item;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case BODY:
+        if (unit->equipped_slots.body != NULL)
+            return SLOT_IS_USED;
+
         unit->equipped_slots.body = item;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case RIGHT_HAND:
+        if (unit->equipped_slots.right_hand != NULL)
+            return SLOT_IS_USED;
+
         unit->equipped_slots.right_hand = item;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case LEFT_HAND:
+        if (unit->equipped_slots.left_hand != NULL)
+            return SLOT_IS_USED;
+
         unit->equipped_slots.left_hand = item;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case LEGS:
+        if (unit->equipped_slots.legs != NULL)
+            return SLOT_IS_USED;
+
         unit->equipped_slots.legs = item;
         _apply_effect(unit, item->effects);
         return OK;
         break;
+
+    default:
+        return NOT_EQUIPPABLE;
+        break;
+    }
+}
+
+ExceptionStatus equip_from_inventory(Unit *unit, int item_index)
+{
+    Item *item = get_item_by_index(unit, item_index);
+    int exception;
+    bool equipped = 0;
+
+    if (item == NULL)
+        return NO_SUCH_ITEM_IN_INVENTORY;
+
+
+    exception = is_equipped(unit, item_index, &equipped);
+
+    if (exception)
+        return exception;
+
+    exception = equip(unit, item);
+    if (exception)
+        return exception;
+
+    return OK;
+}
+
+ExceptionStatus unequip(Unit *unit, ItemType item_type)
+{
+    Item *item = get_item_by_slot(unit, item_type);
+    switch (item_type)
+    {
+    case HEAD:
+        if (unit->equipped_slots.head == NULL)
+            return SLOT_IS_NOT_USED;
+
+        unit->equipped_slots.head = NULL;
+        _unapply_effect(unit, item->effects);
+        return OK;
+        break;
+
+    case BODY:
+        if (unit->equipped_slots.body == NULL)
+            return SLOT_IS_NOT_USED;
+
+        unit->equipped_slots.body = NULL;
+        _unapply_effect(unit, item->effects);
+        return OK;
+        break;
+
+    case RIGHT_HAND:
+        if (unit->equipped_slots.right_hand == NULL)
+            return SLOT_IS_NOT_USED;
+
+        unit->equipped_slots.right_hand = NULL;
+        _unapply_effect(unit, item->effects);
+        return OK;
+        break;
+
+    case LEFT_HAND:
+        if (unit->equipped_slots.left_hand == NULL)
+            return SLOT_IS_NOT_USED;
+
+        unit->equipped_slots.left_hand = NULL;
+        _unapply_effect(unit, item->effects);
+        return OK;
+        break;
+
+    case LEGS:
+        if (unit->equipped_slots.legs == NULL)
+            return SLOT_IS_NOT_USED;
+
+        unit->equipped_slots.legs = NULL;
+        _unapply_effect(unit, item->effects);
+        return OK;
+        break;
+
+    default:
+        return NOT_EQUIPPABLE;
+        break;
+    }
+}
+
+ExceptionStatus is_equipped(Unit *unit, int item_index, bool *is_equipped)
+{
+    Item *item;
+
+    item = get_item_by_index(unit, item_index);
+    if (item == NULL)
+        return INVALID_ITEM_INDEX;
+
+    if (item->type == CONSUMABLE)
+        return NOT_EQUIPPABLE;
+
+    switch (item->type)
+    {
+    case HEAD:
+        if (unit->equipped_slots.head == item)
+            *is_equipped = true;
+        else
+            *is_equipped = false;
+        return OK;
+
+    case BODY:
+        if (unit->equipped_slots.body == item)
+                *is_equipped = true;
+            else
+                *is_equipped = false;
+            return OK;
+
+    case RIGHT_HAND:
+        if (unit->equipped_slots.right_hand == item)
+                *is_equipped = true;
+            else
+                *is_equipped = false;
+            return OK;
+
+    case LEFT_HAND:
+        if (unit->equipped_slots.left_hand == item)
+                *is_equipped = true;
+            else
+                *is_equipped = false;
+            return OK;
+
+    case LEGS:
+        if (unit->equipped_slots.legs == item)
+                *is_equipped = true;
+            else
+                *is_equipped = false;
+            return OK;
 
     default:
         return NOT_EQUIPPABLE;
