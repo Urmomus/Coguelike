@@ -128,6 +128,56 @@ int main()
 
     exception = delete_from_inventory(player, 0);
     printf("%d\n", player->hp);
-
     printf("%d\n", exception);
+
+    printf("%d\n", player->inventory.current_size);
+    Item *potion = malloc(sizeof(Item));
+
+    Effect *potion_heal = malloc(sizeof(Effect));
+    potion_heal->scale = 10;
+    potion_heal->type = HP_UP;
+
+    Effects healing = {
+        potion_heal,
+        1,
+        256
+    };
+
+    potion->type = CONSUMABLE;
+    potion->effects = healing;
+    potion->name = "чёт зульё";
+    potion->uses = 2;
+
+    add_to_inventory(player, *potion);
+
+    printf("ХыПы: %d\n", player->hp);
+    for (int i = 0; i < player->inventory.current_size; i++)
+    {
+        printf("Предмет: %s \n", player->inventory.items[i].name);
+        printf("Размер инвентаря: %d\n\n", player->inventory.current_size);
+    }
+
+    use(player, 1);
+
+    printf("ХыПы: %d\n", player->hp);
+    for (int i = 0; i < player->inventory.current_size; i++)
+    {
+        bool is_eq = false;
+        is_equipped(player, i, &is_eq);
+        printf("Предмет: %s \n", player->inventory.items[i].name);
+        printf("Размер инвентаря: %d\n", player->inventory.current_size);
+        printf("Экипирован: %d\n\n", is_eq);
+    }
+
+    use(player, 1);
+
+    printf("ХыПы: %d\n", player->hp);
+    for (int i = 0; i < player->inventory.current_size; i++)
+    {
+        bool is_eq = false;
+        is_equipped(player, i, &is_eq);
+        printf("Предмет: %s \n", player->inventory.items[i].name);
+        printf("Размер инвентаря: %d\n", player->inventory.current_size);
+        printf("Экипирован: %d\n\n", is_eq);
+    }
 }
