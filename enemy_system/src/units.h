@@ -68,14 +68,6 @@ ExceptionStatus attack(Unit *attacker, Unit *defender);
 ExceptionStatus generate_monsters(Unit *monsters, int size, int level);
 
 /**
- * @brief функция генерации предметов
- * @param items неинициализированные предметы
- * @param level текущий уровень подземелья
- * @return возвращает код ошибки
- */
-
-
-/**
  * @brief фунекция использования неэкипируемого предмета (например, зелья)
  * @param unit персонаж, использующий предмет
  * @param item_index индекс предмета в инвентаре

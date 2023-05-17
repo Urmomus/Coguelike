@@ -140,18 +140,22 @@ ExceptionStatus _unapply_effect(Unit *unit, Effects effects)
     {
     case HEAL:
         unit->hp -= effect.scale;
+        return OK;
         break;
 
     case HP_UP:
         unit->hp -= effect.scale;
+        return OK;
         break;
 
     case DMG_UP:
         unit->dmg -= effect.scale;
+        return OK;
         break;
 
     case DEFENSE_UP:
         unit->defense -= effect.scale;
+        return OK;
         break;
 
     default:
@@ -262,6 +266,7 @@ ExceptionStatus take_damage(Unit *unit, int damage)
         return INVALID_DAMAGE;
 
     unit->hp -= damage;
+    return OK;
 }
 
 ExceptionStatus use(Unit *unit, int item_index)
@@ -288,6 +293,7 @@ ExceptionStatus add_to_inventory(Unit *unit, Item item)
 {
     unit->inventory.current_size += 1;
     unit->inventory.items[unit->inventory.current_size - 1] = item;
+    return OK;
 }
 
 ExceptionStatus delete_from_inventory(Unit *unit, int item_index)
@@ -307,11 +313,11 @@ ExceptionStatus delete_from_inventory(Unit *unit, int item_index)
             return ITEM_IS_EQUIPPED;
     }
 
-    unit->inventory.current_size -= 1;
-    for (int i = unit->inventory.current_size - 1; i > item_index; i++)
+    for (int i = item_index; i < unit->inventory.current_size; i++)
     {
         unit->inventory.items[i] = unit->inventory.items[i + 1];
     }
+    unit->inventory.current_size -= 1;
 }
 
 ExceptionStatus equip(Unit *unit, Item *item)

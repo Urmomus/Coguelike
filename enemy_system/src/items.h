@@ -74,6 +74,12 @@ typedef struct
     int max_size;
 } Inventory;
 
+/**
+ * @brief функция генерации предметов
+ * @param items неинициализированные предметы
+ * @param level текущий уровень подземелья
+ * @return возвращает код ошибки
+ */
 ExceptionStatus generate_loot(Item *items, int size, int level);
 
 #endif
