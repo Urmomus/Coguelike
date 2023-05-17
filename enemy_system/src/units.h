@@ -52,9 +52,6 @@ typedef struct
     int defense;
 } Unit;
 
-
-// ExceptionStatus pick_up(Unit *unit, Cell cell);
-
 /**
  * @brief функция атаки одного моба на другого
  * @param attacker атакующий моб
@@ -77,21 +74,59 @@ ExceptionStatus generate_monsters(Unit *monsters, int size, int level);
  * @return возвращает код ошибки
  */
 
-ExceptionStatus take_damage(Unit *unit, int damage);
 
 /**
  * @brief фунекция использования неэкипируемого предмета (например, зелья)
- * @param unit персонаж,
+ * @param unit персонаж, использующий предмет
+ * @param item_index индекс предмета в инвентаре
 */
 ExceptionStatus use(Unit *unit, int item_index);
-ExceptionStatus equip(Unit *unit, Item *item);
+
+/**
+ * @brief фунекция деэкипировки предмета
+ * @param unit персонаж, деэкипирующий предмет
+ * @param item_type тип слота предмета
+ */
 ExceptionStatus unequip(Unit *unit, ItemType item_type);
+
+/**
+ * @brief фунекция деэкипировки предмета
+ * @param unit персонаж, экипирующий предмет
+ * @param item_index индекс предмета в инвентаре
+ */
 ExceptionStatus equip_from_inventory(Unit *unit, int item_index);
+
+/**
+ * @brief фунекция добавления предмета в инвентарь
+ * @param unit персонаж, подбирающий предмет
+ * @param item подбираемый предмет
+ */
 ExceptionStatus add_to_inventory(Unit *unit, Item item);
+
+/**
+ * @brief фунекция удаления предмета из инвентаря
+ * @param unit персонаж, выбрасывающий предмет
+ * @param item_index индекс удаляемого предмета в инвентаре
+ */
 ExceptionStatus delete_from_inventory(Unit *unit, int item_index);
+
+/**
+ * @brief фунекция генерации игрока
+ * @param player ссылка на игрока
+ * @param player_name имя игрока
+ */
 ExceptionStatus generate_player(Unit *player, char *player_name);
+
+/**
+ * @brief фунекция, проверяющая, экипирован ли предмет
+ * @param unit персонаж, в инвентаре которого находится предмет
+ * @param item_index индекс проверяемого предмета в инвентаре
+ * @param is_equipped указатель на переменную истинности суждения
+ */
 ExceptionStatus is_equipped(Unit *unit, int item_index, bool *is_equipped);
+
 Item *get_item_by_slot(Unit *unit, ItemType type);
 Item *get_item_by_index(Unit *unit, int index);
+ExceptionStatus take_damage(Unit *unit, int damage);
 
 #endif
