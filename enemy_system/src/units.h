@@ -78,7 +78,12 @@ ExceptionStatus generate_monsters(Unit *monsters, int size, int level);
  */
 
 ExceptionStatus take_damage(Unit *unit, int damage);
-ExceptionStatus use(Unit *unit, Item *item);
+
+/**
+ * @brief фунекция использования неэкипируемого предмета (например, зелья)
+ * @param unit персонаж,
+*/
+ExceptionStatus use(Unit *unit, int item_index);
 ExceptionStatus equip(Unit *unit, Item *item);
 ExceptionStatus unequip(Unit *unit, ItemType item_type);
 ExceptionStatus equip_from_inventory(Unit *unit, int item_index);

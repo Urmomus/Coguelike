@@ -264,12 +264,23 @@ ExceptionStatus take_damage(Unit *unit, int damage)
     unit->hp -= damage;
 }
 
-ExceptionStatus use(Unit *unit, Item *item)
+ExceptionStatus use(Unit *unit, int item_index)
 {
+    int exception;
+    Item *item = get_item_by_index(unit, item_index);
+
+    if (item == NULL)
+        return INVALID_ITEM_INDEX;
+
     if (item->type != CONSUMABLE)
         return NOT_CONSUMABLE;
 
+    _apply_effect(unit, item->effects);
     item->uses--;
+
+    if (item->uses <= 0)
+        delete_from_inventory(unit, item_index);
+
     return OK;
 }
 
@@ -283,13 +294,18 @@ ExceptionStatus delete_from_inventory(Unit *unit, int item_index)
 {
     bool equipped = false;
     int exception;
+    Item *item = get_item_by_index(unit, item_index);
 
-    exception = is_equipped(unit, item_index, &equipped);
-    if (exception)
-        return exception;
-
-    if (equipped)
-        return ITEM_IS_EQUIPPED;
+    if (item == NULL)
+        return INVALID_ITEM_INDEX;
+    if (item->type != CONSUMABLE)
+    {
+        exception = is_equipped(unit, item_index, &equipped);
+        if (exception)
+            return exception;
+        if (equipped)
+            return ITEM_IS_EQUIPPED;
+    }
 
     unit->inventory.current_size -= 1;
     for (int i = unit->inventory.current_size - 1; i > item_index; i++)
@@ -360,8 +376,7 @@ ExceptionStatus equip_from_inventory(Unit *unit, int item_index)
     bool equipped = 0;
 
     if (item == NULL)
-        return NO_SUCH_ITEM_IN_INVENTORY;
-
+        return INVALID_ITEM_INDEX;
 
     exception = is_equipped(unit, item_index, &equipped);
 
