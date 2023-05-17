@@ -318,6 +318,8 @@ ExceptionStatus delete_from_inventory(Unit *unit, int item_index)
         unit->inventory.items[i] = unit->inventory.items[i + 1];
     }
     unit->inventory.current_size -= 1;
+
+    return OK;
 }
 
 ExceptionStatus equip(Unit *unit, Item *item)
