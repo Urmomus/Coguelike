@@ -1,11 +1,8 @@
 #include <ncurses.h>
-#include 'map'
 
-void renew_screen()
+void renew_screen(int do_change)
 {
-    char *do_change
-
-    if (do_change == True)
+    if (do_change == 1)
     {
         refresh();
     }
