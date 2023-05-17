@@ -46,6 +46,7 @@ int test_attack(char **message)
     Unit *attacker = malloc(sizeof(Unit));
     Unit *defender = malloc(sizeof(Unit));
 
+    attacker->miss_chance = 0;
     attacker->dmg = INITIAL_DMG;
     defender->hp = INITIAL_HP;
     defender->defense = 0;
