@@ -42,10 +42,10 @@ GameMap load(GameMap map_data) {
     // перебор загруженных элементов и вывод на консоль
     printf("\nmap state size:%d \n\n", structure_amount);
 
-    for (int i = 0; i < structure_amount; ++i)
-    {
-        printf("", i + 1, (ptr + i)->size_x, (ptr + i)->age);
-    }
+//    for (int i = 0; i < structure_amount; ++i)
+//    {
+//        printf("", i + 1, (ptr + i)->size_x, (ptr + i)->age);
+//    }
 
     free(ptr);
     fclose(save_file);

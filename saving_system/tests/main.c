@@ -15,7 +15,7 @@ int main()
     else
     {
         printf("\033[0;32;32m");
-        printf("Тесты прошли\n");
+        printf("Тесты выполнены успешно\n");
         printf("\033[0m");
     }
     return 0;
