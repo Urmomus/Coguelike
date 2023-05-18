@@ -145,8 +145,9 @@ int _test_delete_map(char **message)
 /* @brief тестирует все функции библиотеки Map
 /* @return 0, если корректно, 1, если ошибка
 */
-int test_Map(char **message)
+int test_Map()
 {
+    char **message
     if (_test_game_is_finished(message) == 1)
     {
         printf("%s", *message);

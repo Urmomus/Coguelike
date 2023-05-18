@@ -1,16 +1,13 @@
 #include "test_Map.h"
-#include <stdio.h>
 
 int main(void)
 {
-    char **message;
-    int err_code = test_Map(message);
+    int err_code;
+    err_code = test_Map();
 
-    // если тест библиотеки прошёл успешно -- заканчиваем программу
-    if (err_code == 0)
-        return 0;
+    // если тест библиотеки прошёл с ошибками -- заканчиваем программу
+    if (err_code == 1)
+        return 1;
 
-    // в противном случае -- выводим сообщение об ошибке и возвращаем ошибку 1
-    printf("%s", *message);
-    return 1;
+    return 0;
 };

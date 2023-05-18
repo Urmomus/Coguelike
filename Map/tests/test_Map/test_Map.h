@@ -5,6 +5,6 @@
 /* @brief тестирует все функции библиотеки Map
 /* @return 0, если корректно, 1, если ошибка
 */
-int test_Map(char **message);
+int test_Map();
 
 #endif

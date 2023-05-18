@@ -42,7 +42,7 @@ typedef struct
     Slot *equipped_slots;
     float miss_chance;
     char *name;
-    // int x, y;
+    int x, y;
     int lvl;
     int kills;
     int hp;
