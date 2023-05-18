@@ -9,6 +9,7 @@ GameMap load(GameMap map_data) {
     int map_size = sizeof(map_data);
     int structure_amount;
 
+    GameMap res_map;
     FILE * save_file = fopen("save.txt", "r");
     if (!save_file)
     {
@@ -52,6 +53,8 @@ GameMap load(GameMap map_data) {
 }
 
 int save(GameMap *map_data) {
+
+    GameMap *map_save = get_map_state(map_data);
     FILE * fp;
     char *c;
     int size = sizeof(GameMap); // количество записываемых байтов
@@ -63,7 +66,7 @@ int save(GameMap *map_data) {
         printf("Error occured while opening file \n");
     }
     // устанавливаем указатель на начало структуры
-    c = (char *)map_data;
+    c = (char *)map_save;
     // посимвольно записываем в файл структуру
     for (int i = 0; i < size; i++)
     {
