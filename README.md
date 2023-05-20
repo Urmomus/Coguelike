@@ -1,7 +1,2 @@
-# Coguelike
-
-## Структурная схема
-
-![](/github/Structure%20scheme.png "Structure scheme")
-
-## Сигнатуры функций
+# Тут могла быть ваша реклама
+да

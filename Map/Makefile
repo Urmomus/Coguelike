@@ -1,4 +1,4 @@
-TARGET = libEnemySystem
+TARGET = libMap
 CC = gcc
 
 PREF_SRC = ./src/
@@ -11,7 +11,7 @@ ${TARGET}: ${OBJ}
 	ar r ${TARGET}.a ${OBJ}
 
 ${PREF_OBJ}%.o: ${PREF_SRC}%.c
-	${CC} -c $< -o $@
+	${CC} -c -I../enemy_system/src/ $< -o $@
 
 clean:
 	rm ${TARGET} ${OBJ}

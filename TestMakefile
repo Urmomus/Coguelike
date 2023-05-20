@@ -1,0 +1,19 @@
+TARGET = global_test
+CC = gcc
+
+
+TEST_HEADER_PREF = ./Map/tests/test_Map
+LIB_TEST_PREF = ./Map/tests
+HEADER_PREF = ./Map/src
+
+${TARGET}: compileTests
+	./bin/${TARGET}
+
+compileTests: buildTests
+	${CC} ${TARGET}.c -I ${TEST_HEADER_PREF} -ltest_Map -L${LIB_TEST_PREF} -I ${HEADER_PREF} -lMap -L./Map -lm -o ./bin/${TARGET}
+
+buildTests:
+	cd ./Map/tests && make
+
+clean:
+	rm ${TARGET}
