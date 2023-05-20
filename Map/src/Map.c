@@ -1,4 +1,5 @@
 #include "Map.h"
+#include "ErrorCodes.h"
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h> // стереть
@@ -268,6 +269,22 @@ int delete_map(GameMap *game_map)
 */
 int init_map(GameMap *game_map, MapSettings settings)
 {
+	// проверка 2: проверяем, что нам не навалили нулевых указателей
+	if (game_map == NULL)
+		return EMPTY_POINTER;
+
+	// проверка 4: проверяем, что карта ещё не была инициализирована
+	if (game_map -> data != NULL)
+		return MAP_ALREADY_EXISTS;
+
+	// проверка 1: проверяем, что переданные размеры -- корректные
+	if (settings.size_x <= 0 || settings.size_y <= 0)
+		return INVALID_MAP_SIZE;
+
+	// проверка 3: проверяем, что задали корректный уровень
+	if (settings.level <= 0)
+		return INVALID_LEVEL;
+
 	// задаём карте указанные размеры
 	game_map -> size_x = settings.size_x;
 	game_map -> size_y = settings.size_y;
@@ -300,7 +317,7 @@ int init_map(GameMap *game_map, MapSettings settings)
 	for (int y = 0; y < game_map -> size_y; ++y)
 		game_map -> data[y] = malloc(sizeof(Cell) * game_map -> size_x);
 	
-	return NO_ERRORS;
+	return OK;
 };
 
 /**
