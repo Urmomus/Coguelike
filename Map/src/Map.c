@@ -246,6 +246,14 @@ int _copy_map(GameMap *from, GameMap *to)
 */
 int delete_map(GameMap *game_map)
 {	
+	// проверка 0: проверяем, что не навалили нулевых указателей
+	if (game_map == NULL)
+		return EMPTY_POINTER;
+
+	// проверка 1: проверяем, что есть, что удалять
+	if (game_map -> data == NULL)
+		return MAP_ALREADY_DELETED;
+
 	// сначала чистим всю память, выделенную под клетки.
 	for (int i = 0; i < game_map -> size_y; ++i)
 		free(game_map -> data[i]);
@@ -258,7 +266,12 @@ int delete_map(GameMap *game_map)
 	// и мобов
 	free(game_map -> units_list);
 	
-	return NO_ERRORS;
+	// и зануляем все указатели, чтобы показать, что карта очищена
+	game_map -> data = NULL;
+	game_map -> units_list = NULL;
+	game_map -> items_list = NULL;
+
+	return OK;
 };
 
 /****
@@ -274,7 +287,7 @@ int init_map(GameMap *game_map, MapSettings settings)
 		return EMPTY_POINTER;
 
 	// проверка 4: проверяем, что карта ещё не была инициализирована
-	if (game_map -> data != NULL)
+	if (game_map -> data != NULL || game_map -> units_list != NULL || game_map -> items_list != NULL)
 		return MAP_ALREADY_EXISTS;
 
 	// проверка 1: проверяем, что переданные размеры -- корректные
@@ -378,7 +391,7 @@ int _next_state(GameMap *game_map)
          
     _copy_map(&tmp, game_map);
     delete_map(&tmp);
-	return NO_ERRORS;
+	return OK;
 };
 
 /***

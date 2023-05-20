@@ -30,6 +30,9 @@ char* SET_MAP_STATE_ERROR_WITH_NULL = "Ошибка в set_map_state: функц
 // ошибки для delete_map
 char* DELETE_MAP_ERROR_MAP_NOT_DELETED = "Ошибка в delete_map: карта не удалилась!\n";
 char* DELETE_MAP_ERROR_WITH_NULL = "Ошибка в delete_map: функция отработала для нулевого указателя!\n";
+char* DELETE_MAP_DELETED_NON_INITIALIZED_MAP = "Ошибка в delete_map: функция отработала для неинициализированной карты!\n";
+char* DELETE_MAP_CANT_DELETE = "Ошибка в delete_map: функция отказалась работать на корректных входных данных!\n";
+char* DELETE_MAP_DIDNT_DELETE = "Ошибка в delete_map: функция отработала, но не почистила память!\n";
 
 
 // приватные функции
@@ -92,6 +95,10 @@ int _test_init_map(char **message)
 
     // теперь проверяем, что карта не инициализируется, если в ней уже есть какая-то информация
     map_1.data = malloc(777);
+    map_1.units_list = malloc(777);
+    map_1.items_list = malloc(777);
+
+    // три указателя на память
     if (init_map(&map_1, map_1_settings) != MAP_ALREADY_EXISTS)
     {
         *message = INIT_MAP_ERROR_ALREADY_EXISTS;
@@ -99,6 +106,25 @@ int _test_init_map(char **message)
     };
     free(map_1.data);
     map_1.data = NULL;
+
+    // два указателя на память
+    if (init_map(&map_1, map_1_settings) != MAP_ALREADY_EXISTS)
+    {
+        *message = INIT_MAP_ERROR_ALREADY_EXISTS;
+        return 1;
+    };
+    free(map_1.units_list);
+    map_1.units_list = NULL;
+
+    // один указатель на память
+    if (init_map(&map_1, map_1_settings) != MAP_ALREADY_EXISTS)
+    {
+        *message = INIT_MAP_ERROR_ALREADY_EXISTS;
+        return 1;
+    };
+    free(map_1.items_list);
+    map_1.items_list = NULL;
+    // все указатели почищены, поэтому теперь init_map будет давать другие ошибки
 
     // проверяем, что при попытке создать карту некорректного размера происходит ошибка
     map_1_settings.size_x = 0;
@@ -175,30 +201,50 @@ int _test_init_map(char **message)
 */
 int _test_delete_map(char **message)
 {
-    // проверяем, что корректно созданная карта корректно удаляется 
-    /*
-    MapSettings map_1_settings;
-    GameMap map_1;
+    // проверяем, что невозможно удалить нулевой указатель
 
-    map_1_settings.size_x = 5;
-    map_1_settings.size_y = 5;
-
-    init_map(&map_1, map_1_settings);
-    delete_map(&map_1);
-
-    if (map_1.data != NULL)
-    {
-        *message = DELETE_MAP_ERROR_MAP_NOT_DELETED;
-        return 1;
-    };
-
-    // проверяем, что функция корректно обрабатывает случай, когда на вход не пришло корректной карты
     if (delete_map(NULL) != EMPTY_POINTER)
     {
         *message = DELETE_MAP_ERROR_WITH_NULL;
         return 1;
     };
-    */
+
+    MapSettings map_1_settings;
+    GameMap map_1;
+    
+    map_1.data = NULL;  // моделируем ситуацию, что карту ещё не инициализировали
+    map_1.units_list = NULL;
+    map_1.items_list = NULL;
+    
+    // проверяем, что карта не инициализировалась (что есть, что удалять)
+    if (delete_map(&map_1) != MAP_ALREADY_DELETED)
+    {
+        *message = DELETE_MAP_DELETED_NON_INITIALIZED_MAP;
+        return 1;
+    };
+
+    // теперь инициализируем карту
+    map_1_settings.size_x = 40;
+    map_1_settings.size_y = 40;
+    map_1_settings.level = 5;
+
+    init_map(&map_1, map_1_settings);   // имеем право использовать ф-ю, т.к. она уже оттестирована
+    
+    // проверяем, что ф-я работает в корректных ситуациях
+    if (delete_map(&map_1) != OK)
+    {
+        *message = DELETE_MAP_CANT_DELETE;
+        return 1;
+    };
+    
+    // проверяем, что функция, ежели вернула ОК, действительно всё подчистила
+    if (map_1.data != NULL || map_1.units_list != NULL || map_1.items_list != NULL)
+    {
+        *message = DELETE_MAP_DIDNT_DELETE;
+        return 1;
+    };
+
+    // все тесты прошли благополучно, можем возвращать 0
     return 0;
 };
 
@@ -209,7 +255,7 @@ int _test_delete_map(char **message)
 int test_Map()
 {
     char *message;
-    if (_test_init_map(&message) == 1)  // в процессе
+    if (_test_init_map(&message) == 1)  // 1 / 7
     {
         printf("%s", message);
         return 1;
