@@ -12,6 +12,3 @@ ${TARGET}: ${OBJ}
 
 ${PREF_OBJ}%.o: ${PREF_SRC}%.c
 	${CC} -c $< -o $@
-
-clean:
-	rm ${TARGET} ${OBJ}

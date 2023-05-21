@@ -1,19 +1,31 @@
 TARGET = global_test
 CC = gcc
 
-
-TEST_HEADER_PREF = ./enemy_system/tests/test_units
-LIB_TEST_PREF = ./enemy_system/tests
-HEADER_PREF = ./enemy_system/src
-
 ${TARGET}: compileTests
 	./bin/${TARGET}
 
 compileTests: buildTests
-	${CC} ${TARGET}.c -I ${TEST_HEADER_PREF} -lTestEnemySystem -L ${LIB_TEST_PREF} -I ${HEADER_PREF} -lEnemySystem -L ./enemy_system -o ./bin/${TARGET}
+	${CC} ${TARGET}.c \
+	-I ./enemy_system/src -lTestEnemySystem -L ./enemy_system/tests -I ./enemy_system/tests/test_units -lEnemySystem -L ./enemy_system \
+	-I ./Input/src -lTestInput -L ./Input/tests -I ./Input/tests/testInput \
+	-I ./Map/src -lTestMap -L ./Map/tests -I ./Map/tests/testInput \
+	-I ./saving_system/src -lTestSavingSystem -L ./saving_system/tests -I ./saving_system/tests/testSavingSystem \
+	-I ./View/src -lTestView -L ./View/tests -I ./View/tests/testView \
+	-o ./bin/${TARGET}
 
-buildTests:
+buildTests: buildEnemySystemTests buildInputTests buildMapTests buildSavingSystemTests buildViewTests
+
+buildEnemySystemTests:
 	cd ./enemy_system/tests && make
 
-clean:
-	rm ${TARGET}
+buildInputTests:
+	cd ./Input/tests && make
+
+buildMapTests:
+	cd ./Map/tests && make
+
+buildSavingSystemTests:
+	cd ./saving_system/tests && make
+
+buildViewTests:
+	cd ./View/tests && make

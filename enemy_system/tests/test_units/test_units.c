@@ -588,7 +588,7 @@ int test_unequip(char **message)
 
     exception = unequip(player, LEGS);
 
-    if (exception == OK)
+    if (exception != OK)
     {
         *message = UNEQUIP_INVALID_CODE;
         return 1;

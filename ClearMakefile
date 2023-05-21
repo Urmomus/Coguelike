@@ -1,0 +1,42 @@
+clear: clearEnemySystem clearMap clearSavingSystem clearView clearInput
+	find ./bin/ -type f -not -name ".gitkeep" -delete
+
+clearEnemySystem: clearEnemySystemTests
+	find ./enemy_system/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./enemy_system/libEnemySystem.a
+
+clearEnemySystemTests:
+	find ./enemy_system/tests/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./enemy_system/tests/libTestEnemySystem.a
+
+clearMap: clearMapTests
+	find ./Map/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./Map/libMap.a
+
+clearMapTests:
+	find ./Map/tests/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./Map/tests/libTestMap.a
+
+clearSavingSystem: clearSavingSystemTests
+	find ./saving_system/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./saving_system/libSavingSystem.a
+
+clearSavingSystemTests:
+	find ./saving_system/tests/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./saving_system/tests/libTestSavingSystem.a
+
+clearView: clearViewTests
+	find ./View/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./View/libView.a
+
+clearViewTests:
+	find ./View/tests/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./View/tests/libTestView.a
+
+clearInput: clearInputTests
+	find ./Input/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./Input/libInput.a
+
+clearInputTests:
+	find ./Input/tests/obj/ -type f -not -name ".gitkeep" -delete \
+	&& rm ./Input/tests/libTestInput.a
