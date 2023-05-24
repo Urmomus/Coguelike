@@ -1,6 +1,7 @@
 #include "units.h"
 #include "Map.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -43,6 +44,9 @@ int main()
         if (game_mode == 'g')
             print_map(&game_map);
 
+        if (game_mode == 'i')
+            print_inventory(&game_map);
+
         char cmd;
         cmd = getchar();
         fflush(stdin);
@@ -68,7 +72,7 @@ int main()
                 move_player(&game_map, 'r');
                 break;
             };
-            case 'e':
+            case 'c':
             {
                 move_player(&game_map, 's');
                 break;
@@ -80,7 +84,23 @@ int main()
                     game_mode = 'i';
                 else
                     game_mode = 'g';
-                
+                break;
+            };
+            case 'e':
+            {
+                // экипируем предмет
+                scanf("%d", (int*)&cmd);
+
+                equip_from_inventory(game_map.units_list + PLAYER_INDEX, cmd);
+                break;
+            };
+            case 'u':
+            {
+                // используем предмет
+                scanf("%d", (int*)&cmd);
+
+                use(game_map.units_list + PLAYER_INDEX, cmd);
+                break;
             };
             default:
             {
@@ -134,5 +154,15 @@ void print_map(GameMap *game_map)
  {
     system("clear");    // чистим экран
     printf("Inventory:\n\n");
-    //for (int i = 0; i < game_map -> units_list[PLAYER_INDEX].)
+    // перебираем весь инвертарь player'a
+    for (int i = 0; i < game_map -> units_list[PLAYER_INDEX].inventory.current_size; ++i)
+    {
+        bool is_eq;
+        printf("Предмет №%d\n", i);
+        printf("Название: %s\n", game_map -> units_list[PLAYER_INDEX].inventory.items[i].name);
+        is_equipped(game_map -> units_list + PLAYER_INDEX, i, &is_eq);
+        if (is_eq)
+            printf("Экипирован\n");
+        printf("\n\n");
+    };
  };
