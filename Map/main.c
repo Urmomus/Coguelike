@@ -51,7 +51,7 @@ int main(void)
 		system("clear");
 
 		move_monsters(&game_map);
-
+		//printf("MONSTERS_WAS_MOVED\n");
 		/*
 		for (int ind = 1; ind < game_map.units_num; ++ind)
 		{
