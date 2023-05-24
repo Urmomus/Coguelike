@@ -46,6 +46,9 @@ typedef struct
 	Item *items_list;	// список всех предметов
 } GameMap;
 
+// переменные и константы
+extern const int PLAYER_INDEX;  // индекс, под которым в массиве units_list расположен игрок. 
+
 // функции
 
 /**

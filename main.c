@@ -10,11 +10,15 @@ char* wall_cell = "\033[37;40m#";
 char* mob_cell = "\033[40;35mG";
 char* player_cell = "\033[40;31m@";
 char* item_cell = "\033[40;33;40mi";
+
 void print_map(GameMap *game_map);
+void print_inventory(GameMap *game_map);
 
 int main()
 {
     srand(5);
+
+    char game_mode = 'g';    // g = game, i = inventory
 
     GameMap game_map;   
     
@@ -36,7 +40,8 @@ int main()
     int game_is_finished = false;
     for (; !game_is_finished ;)
     {
-        print_map(&game_map);
+        if (game_mode == 'g')
+            print_map(&game_map);
 
         char cmd;
         cmd = getchar();
@@ -68,13 +73,23 @@ int main()
                 move_player(&game_map, 's');
                 break;
             };
+            case 'i':
+            {
+                // входим / выходим из инвентаря
+                if (game_mode == 'g')
+                    game_mode = 'i';
+                else
+                    game_mode = 'g';
+                
+            };
             default:
             {
                 continue;
             };
         };
         //printf("player was moved\n");
-        move_monsters(&game_map);
+        if (game_mode == 'g')
+            move_monsters(&game_map);
         //printf("monster was moved\n");
     };
     
@@ -112,10 +127,12 @@ void print_map(GameMap *game_map)
     int lvl = game_map -> units_list[0].lvl;
     printf("player's level: %d\n", lvl);
     printf("player's HP: %d\n", hp);
-    printf("player's name: %s\n", game_map -> units_list[0].name);
-    printf("inventory:\n");
-    for (int i = 0; i < game_map -> units_list[0].inventory.current_size; ++i)
-    {
-        printf("%s\n", game_map -> units_list[0].inventory.items[i].name);
-    };
+    printf("player's name: %s\n", game_map -> units_list[PLAYER_INDEX].name);
+ };
+
+ void print_inventory(GameMap *game_map)
+ {
+    system("clear");    // чистим экран
+    printf("Inventory:\n\n");
+    //for (int i = 0; i < game_map -> units_list[PLAYER_INDEX].)
  };
