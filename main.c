@@ -10,7 +10,8 @@ char* free_cell = "\033[37;40m.";
 char* wall_cell = "\033[37;40m#";
 char* mob_cell = "\033[40;35mG";
 char* player_cell = "\033[40;31m@";
-char* item_cell = "\033[40;33;40mi";
+char* item_cell = "\033[40;33mi";
+char* portal_cell = "\033[40;34m@";
 
 void print_map(GameMap *game_map);
 void print_inventory(GameMap *game_map);
@@ -36,6 +37,11 @@ int main()
     int err_code = init_map(&game_map, settings);
     //printf("%d\n", err_code);
     err_code = generate_maps_landscape(&game_map);
+    if (err_code)
+    {
+        printf("ERROR: %d", err_code);
+        return 1;
+    }
     err_code = generate_maps_content(&game_map);
 
     int game_is_finished = false;
@@ -137,6 +143,8 @@ void print_map(GameMap *game_map)
                 cell = item_cell;
             else if (game_map->data[y][x].type == WALL_CELL)
                 cell = wall_cell;
+            else if (game_map->data[y][x].type == FINISH_CELL)
+                cell = portal_cell;
             else
                 cell = free_cell;
             printf("%s ", cell);

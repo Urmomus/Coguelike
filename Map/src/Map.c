@@ -33,7 +33,7 @@ LandsapeSettings;
 // константы
 
 const int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
-LandsapeSettings _std_settings = {36, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
+LandsapeSettings _std_settings = {39, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
 // приватные функции
 
@@ -355,6 +355,8 @@ int _next_state(GameMap *game_map)
 {    
 	GameMap tmp;
 	
+	tmp.units_list = NULL; tmp.items_list = NULL; tmp.data = NULL;
+
 	MapSettings tmp_settings;
 
 	// копируем настройки исходной карты
@@ -510,6 +512,32 @@ int generate_maps_landscape(GameMap *game_map)
 	for (int y = 0; y < game_map -> size_y; ++y)
 		free(used[y]);
 	free(used);
+
+	// осталось закинуть на карту "переход на следующий уровень" -- специальную клетку
+	int num_of_free_cells = 0;	// кол-во свободных клеток -- на них можно разместить "переход"
+	for (int y = 0; y < game_map -> size_y; ++y)
+		for (int x = 0; x < game_map -> size_x; ++x)
+			num_of_free_cells += (game_map -> data[y][x].type == FREE_CELL);
+	
+	// генерируем случайное число в пределах [0; num_of_free_cells);
+	int place_for_portal = rand() % num_of_free_cells;	// номер свободной клетки, где стоит портал
+	printf("PLACE FOR PORTAL: %d\n", place_for_portal);
+	scanf("%d", &num_of_free_cells);
+	int now_cell = 0;		// номер текущей свободной клетки
+	
+	for (int y = 0; y < game_map -> size_y; ++y)
+		for (int x = 0; x < game_map -> size_x; ++x)
+		{
+			if (game_map -> data[y][x].type != FREE_CELL)
+				continue;
+			if (now_cell == place_for_portal)
+			{
+				game_map -> data[y][x].type = FINISH_CELL;
+				printf("PORTAL: (%d, %d)\n", x, y);
+				scanf("%d", &num_of_free_cells);
+			};
+			now_cell += 1;
+		};
 
 	return NO_ERRORS;
 };
