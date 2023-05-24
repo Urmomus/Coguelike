@@ -146,10 +146,21 @@ int _index_is_correct(GameMap *game_map, int ind, char type);
 */
 char _cnt_direction_for_move(GameMap *game_map, int ind);
 
+/****
+ * @brief обновляет состояние юнита: если юнит умер, то он отвязывается от карты
+ * @param game_map игровая карта
+ * @param unit юнит, состояние которого обновляем
+ * @return код ошибки
+*/
+int _resresh_is_live(GameMap *game_map, Unit *unit);
 
-
-
-
+/****
+ * @brief проверяет, что юнит выставлен на карте (т.е. -- живой и может двигаться)
+ * @param game_map игровая карта
+ * @param unit юнит
+ * @return 0, если не выставлен, 1, если выставлен
+*/
+int _unit_on_map(GameMap *game_map, Unit *unit);
 
 // реализации функций
 
@@ -655,8 +666,9 @@ int generate_maps_content(GameMap *game_map)
 {
 	// создаём монстров и предметы (списки)
 
-	//generate_monsters(&game_map -> units_list, game_map -> units_num, game_map -> level);
-	//generate_loot(&game_map -> items_list, game_map -> items_num, game_map -> level);
+	generate_monsters(game_map -> units_list, game_map -> units_num, game_map -> level);
+	generate_player(game_map -> units_list + PLAYER_INDEX, "Elpatio");
+	generate_loot(game_map -> items_list, game_map -> items_num, game_map -> level);
 
 	// пока заколхожу, что все монстры -- гоблины, а игрок -- под индексом PLAYER_INDEX
 	for (int i = 0; i < game_map -> units_num; ++i)
@@ -695,8 +707,8 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 		x = x + 1;
 
 	if (dir == 'u')	// вверх
-		y = y - 1;	
-	
+		y = y - 1;
+
 	if (dir == 'd')	// вниз
 		y = y + 1;
 
@@ -708,14 +720,34 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 	if (game_map -> data[y][x].type == WALL_CELL)
 		return MOVE_IS_IMPOSSIBLE;
 	
+	// ежели мы упёрлись в иного юнита
 	if (game_map -> data[y][x].unit != NULL)
 	{
-		// здесь будет атака
-		// TODO
+		if (game_map -> data[y][x].unit -> unit_type != PLAYER && game_map -> units_list[ind].unit_type != PLAYER)
+			return MOVE_IS_IMPOSSIBLE;
+		// атакуем-с
+		attack(game_map -> units_list + ind, game_map -> data[y][x].unit);
+		_resresh_is_live(game_map, game_map -> data[y][x].unit);	// проверяем, не умер ли атакуемый
+		return OK;
 	};
 
 	// встаём на новую клетку
 	int err_code = _bind_unit_to_cell(game_map, ind, x, y);
+
+	if (err_code == OK)
+	{
+		// если нет предмета -- скипаем
+		if (game_map -> data[y][x].item == NULL)
+			return OK;
+
+		// если ходил не игрок -- скипаем (т.к. подымать предметы может только игрок)
+		if (ind != PLAYER_INDEX)
+			return OK;
+
+		// поднимаем предмет	
+		add_to_inventory(&game_map -> units_list[ind], *game_map -> data[y][x].item);	// добавляем в инвертарь
+		game_map -> data[y][x].item = NULL;	// отвязываем предмет от клетки
+	};
 
 	// и возвращаем результаты оного действия
 	return err_code;
@@ -787,11 +819,12 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 
 	// и привязываем к указанной клетке
 	game_map -> data[y][x].unit = &(game_map -> units_list[ind]);
-	game_map -> units_list[ind].x = x;
+	
 	
 	// и меняем юниту координаты
 	game_map -> units_list[ind].y = y;
-	
+	game_map -> units_list[ind].x = x;
+
 	return NO_ERRORS;
 };
 
@@ -856,16 +889,20 @@ int _index_is_correct(GameMap *game_map, int ind, char type)
 void move_monsters(GameMap *game_map)
 {
 	// с единицы -- потому что нулевой -- игрок
-	for (int ind = 1; ind < game_map -> units_num; ++ind)
+	for (int ind = PLAYER_INDEX + 1; ind < game_map -> units_num; ++ind)
 	{
+		// если юнит умер или не был выставлен -- в движении он не участвует
+		if (!_unit_on_map(game_map, game_map -> units_list + ind))
+			continue;
+		
 		char not_need_to_continue; 
 		_can_see_player(game_map, ind, &not_need_to_continue);
 		if (!not_need_to_continue)
 			continue;
 		
 		// TODO: снести нахуй: это для тестов
-		if (ind != 1)
-			continue;
+		//if (ind != 1)
+		//	continue;
 
 		//эхо-печать для тестов
 		//printf("двигается монстр номер %d\n", ind);
@@ -874,6 +911,7 @@ void move_monsters(GameMap *game_map)
 		char direction = _cnt_direction_for_move(game_map, ind);
 		_move_unit(game_map, ind, direction);
 	};
+	getchar();
 };
 
 // структура клетки для реализации BFS
@@ -1096,4 +1134,38 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 	free(dirs);
 
 	return ans;
+};
+
+/****
+ * @brief обновляет состояние юнита: если юнит умер, то он отвязывается от карты
+ * @param game_map игровая карта
+ * @param unit юнит, состояние которого обновляем
+ * @return код ошибки
+*/
+int _resresh_is_live(GameMap *game_map, Unit *unit)
+{
+	// ищем юнита в списке юнитов
+	int ind;	// индекс юнита
+	for (ind = 0; ind < game_map -> units_num; ++ind)
+	{
+		if (game_map -> units_list + ind == unit)
+			break;
+	};
+	// если юнит уже помер -- отвязываем его от клетки
+	if (game_map -> units_list[ind].hp <= 0)
+		_unbind_unit_from_cell(game_map, ind);
+	return OK;
+};
+
+/****
+ * @brief проверяет, что юнит выставлен на карте (т.е. -- живой и может двигаться)
+ * @param game_map игровая карта
+ * @param unit юнит
+ * @return 0, если не выставлен, 1, если выставлен
+*/
+int _unit_on_map(GameMap *game_map, Unit *unit)
+{
+	int x = unit -> x;
+	int y = unit -> y;
+	return _coords_are_correct(game_map, x, y);
 };

@@ -44,6 +44,9 @@ int _test_init_map(char **message);
 int _test_delete_map(char **message);
 int _test_generate_map_landscape(char **message);
 
+
+// реализации функций
+
 int _test_generate_map_landscape(char **message)
 {
     return 0;
