@@ -33,7 +33,7 @@ LandsapeSettings;
 // константы
 
 const int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
-LandsapeSettings _std_settings = {39, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
+LandsapeSettings _std_settings = {34, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
 // приватные функции
 
@@ -161,6 +161,13 @@ int _resresh_is_live(GameMap *game_map, Unit *unit);
  * @return 0, если не выставлен, 1, если выставлен
 */
 int _unit_on_map(GameMap *game_map, Unit *unit);
+
+/********
+ * @brief переводит игрока на след. уровень
+ * @param game_map игровая карта
+ * @return код ошибки
+*/
+int _next_level(GameMap *game_map);
 
 // реализации функций
 
@@ -790,7 +797,22 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 int move_player(GameMap *game_map, char dir)
 {
 	// игрок -- это просто юнит под индексом PLAYER_INDEX
-	return _move_unit(game_map, PLAYER_INDEX, dir);
+	int err_code = _move_unit(game_map, PLAYER_INDEX, dir);
+	if (err_code)
+		return err_code;	// если ошибки -- возвращаем
+	
+	// если же всё прошло без ошибок, то надо проверить одну животрепещущую ситуацию, а именно -- 
+	// не оказался ли игрок на переходе на след. уровень.
+	int x = game_map -> units_list[PLAYER_INDEX].x;
+	int y = game_map -> units_list[PLAYER_INDEX].y;
+	
+	// если мы попали не на клетку перехода -- то по барабану, на какую: возвращаем ОК
+	if (game_map -> data[y][x].type != FINISH_CELL)
+		return OK;
+	
+	// здесь мы, получается, встали на клетку перехода на следующий уровень
+	_next_level(game_map);
+	
 };
 
 /******
@@ -1196,4 +1218,24 @@ int _unit_on_map(GameMap *game_map, Unit *unit)
 	int x = unit -> x;
 	int y = unit -> y;
 	return _coords_are_correct(game_map, x, y);
+};
+
+/********
+ * @brief переводит игрока на след. уровень
+ * @param game_map игровая карта
+ * @return код ошибки
+*/
+int _next_level(GameMap *game_map)
+{
+	MapSettings next_level_settings;
+	next_level_settings.size_x = game_map -> size_x;
+	next_level_settings.size_y = game_map -> size_y;
+	next_level_settings.level = game_map -> level + 1;	// след. уровень
+	
+	delete_map(game_map);	// стираем карту
+
+	// и заново всё пересчитываем для следующего уровня
+	init_map(game_map, next_level_settings);
+	generate_maps_landscape(game_map);
+	generate_maps_content(game_map);
 };
