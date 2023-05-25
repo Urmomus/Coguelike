@@ -451,6 +451,12 @@ void _dfs(GameMap *game_map, char **used, int x, int y, int size_x, int size_y, 
  */
 int generate_maps_landscape(GameMap *game_map)
 {
+	// проверяем, что на вход пришла карта, а не NULL
+	if (game_map == NULL)
+		return EMPTY_POINTER;
+	// проверяем, что на вход пришла инициализированная карта
+	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
+		return MAP_ALREADY_DELETED;	
 	for (int y = 0; y < game_map -> size_y; ++y)
 		for (int x = 0; x < game_map -> size_x; ++x)
 		{
@@ -528,8 +534,6 @@ int generate_maps_landscape(GameMap *game_map)
 	
 	// генерируем случайное число в пределах [0; num_of_free_cells);
 	int place_for_portal = rand() % num_of_free_cells;	// номер свободной клетки, где стоит портал
-	printf("PLACE FOR PORTAL: %d\n", place_for_portal);
-	scanf("%d", &num_of_free_cells);
 	int now_cell = 0;		// номер текущей свободной клетки
 	
 	for (int y = 0; y < game_map -> size_y; ++y)
@@ -540,8 +544,6 @@ int generate_maps_landscape(GameMap *game_map)
 			if (now_cell == place_for_portal)
 			{
 				game_map -> data[y][x].type = FINISH_CELL;
-				printf("PORTAL: (%d, %d)\n", x, y);
-				scanf("%d", &num_of_free_cells);
 			};
 			now_cell += 1;
 		};

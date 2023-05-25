@@ -34,21 +34,160 @@ char* DELETE_MAP_DELETED_NON_INITIALIZED_MAP = "Ошибка в delete_map: фу
 char* DELETE_MAP_CANT_DELETE = "Ошибка в delete_map: функция отказалась работать на корректных входных данных!\n";
 char* DELETE_MAP_DIDNT_DELETE = "Ошибка в delete_map: функция отработала, но не почистила память!\n";
 
+// ошибки для generate_maps_landscape
+char *GENERATE_MAPS_LANDSCAPE_WORKS_WITH_NULL = "Ошибка в generate_maps_landscape: функция отработала для нулевого указателя!\n";
+char *GENERATE_MAPS_LANDSCAPE_WORKS_WITH_NON_INITIALIZED_MAP = "Ошибка в generate_maps_landscape: функция отработала для неинициализированной либо удалённой карты!\n";
+char *GENERATE_MAPS_LANDSCAPE_CANT_GENERATE_LANDSCAPE = "Ошибка в generate_maps_landscape: функция не отработала, хотя должна была!\n";
+char *GENERATE_MAPS_LANDSCAPE_GENERATED_NON_ONE_GRAPH = "Ошибка в generate_maps_landscape: сгенерировалась карта, содержащая несколько несвязных областей!\n";
+char *GENERATE_MAPS_LANDSCAPE_GENERATED_MAP_WITHOUT_NEXT_LEVEL_CELL = "Ошибка в generate_maps_landscape: сгенерировалась карта, не содержащая перехода на следующий уровень!\n";
+
 
 // приватные функции
 
 int _test_game_is_finished(char **message);
 int _test_get_map_state(char **message);
 int _test_set_map_state(char **message);
-int _test_init_map(char **message);
-int _test_delete_map(char **message);
-int _test_generate_map_landscape(char **message);
+int _test_init_map(char **message);                 // готова
+int _test_delete_map(char **message);               // готова
+int _test_generate_map_landscape(char **message);   // in process
+
 
 
 // реализации функций
 
+/********
+ * @brief алгоритм dfs
+ * @param game_map карта
+ * @param used массив "посещено / не посещено"
+ * @param x координата по х
+ * @param y координата по y 
+*/
+void _dfs_(GameMap *game_map, char **used, int x, int y)
+{
+    if (x < 0 || y < 0 || x >= game_map -> size_x || y >= game_map -> size_y)
+        return;
+    if (used[y][x])
+        return;
+    if (game_map->data[y][x].type == WALL_CELL)
+        return;
+    used[y][x] = true;
+    _dfs_(game_map, used, x+1, y);
+    _dfs_(game_map, used, x-1, y);
+    _dfs_(game_map, used, x, y-1);
+    _dfs_(game_map, used, x, y+1);
+};
+
+/************
+ * @brief считает кол-во отдельных "зон" на карте
+ * @param game_map карта
+ * @return кол-во отдельных "зон" на карте
+*/
+int cnt_places(GameMap *game_map)
+{
+    char **used = malloc(sizeof(char*) * game_map -> size_y);
+    // чистим used'ы
+    for (int y = 0; y < game_map -> size_y; ++y)
+    {    
+        used[y] = malloc(sizeof(char) * game_map -> size_x);
+        for (int x = 0; x < game_map -> size_x; ++x)
+        {
+            used[y][x] = 0;
+        };
+    };
+    // считаем кол-во "зон"
+    int zones_cnt = 0;
+    for (int y = 0; y < game_map -> size_y; ++y)
+    {
+        for (int x = 0; x < game_map -> size_x; ++x)
+        {
+            // стены не обрабатываем
+            if (game_map -> data[y][x].type == WALL_CELL)
+                continue;
+            if (!used[y][x])
+            {
+                zones_cnt += 1;
+                _dfs_(game_map, used, x, y);
+            };
+        };
+    };
+
+    // не забываем чистить память!
+    for (int y = 0; y < game_map -> size_y; ++y)
+        free(used[y]);
+    free(used);
+    
+    return zones_cnt;
+};
+
 int _test_generate_map_landscape(char **message)
 {
+    GameMap game_map;
+
+    // проверяем, что NULL обрабатывается
+    if (generate_maps_landscape(NULL) != EMPTY_POINTER)
+    {
+        *message = GENERATE_MAPS_LANDSCAPE_WORKS_WITH_NULL;
+        return 1;
+    };
+
+    // проверяем, что неинициализированная карта обрабатывается
+    game_map.data = NULL;
+    if (generate_maps_landscape(&game_map) != MAP_ALREADY_DELETED)
+    {
+        *message = GENERATE_MAPS_LANDSCAPE_WORKS_WITH_NON_INITIALIZED_MAP;
+        return 1;
+    };
+
+    // для корректной инициализации -- все указатели надо занулить
+    game_map.units_list = NULL;
+    game_map.items_list = NULL;
+    game_map.data = NULL;
+    MapSettings settings = {50, 50, 1};
+    init_map(&game_map, settings);  // эта функция уже оттещена
+
+    // проверяем, что ландшафт генерируется
+    if (generate_maps_landscape(&game_map) != OK)
+    {
+        *message = GENERATE_MAPS_LANDSCAPE_CANT_GENERATE_LANDSCAPE;
+        return 1;
+    };
+
+    // чистим память
+    delete_map(&game_map);  // эта функция уже оттещена
+
+    // теперь мы делаем что: мы создаём разные конфигурации карты и смотрим:
+    for (int seed = 0; seed < 15; ++seed)
+    {
+        srand(seed);
+        for (int level = 1; level < 10; ++level)
+        {
+            settings.size_x = settings.size_y = level * 10; // чтобы размеры карты также изменялись
+
+            init_map(&game_map, settings);  // эта функция уже оттещена
+            generate_maps_landscape(&game_map);
+            bool has_portal = false;
+            for (int y = 0; y < game_map.size_y; ++y)
+                for (int x = 0; x < game_map.size_y; ++x)
+                    if (game_map.data[y][x].type == FINISH_CELL)
+                        has_portal = true;
+
+
+            // проверяем, что в любой конфигурации карты будет переход на след. уровень
+            if (!has_portal)
+            {
+                *message = GENERATE_MAPS_LANDSCAPE_GENERATED_MAP_WITHOUT_NEXT_LEVEL_CELL;
+                return 1;
+            };
+            // проверяем, что в карте ровно один, полностью связный, граф
+            if (cnt_places(&game_map) != 1)
+            {
+                *message = GENERATE_MAPS_LANDSCAPE_GENERATED_NON_ONE_GRAPH;
+                return 1;
+            }
+            delete_map(&game_map);  // эта функция уже оттещена
+        };
+    };
+    // не могу больше придумать проблем с ландшафтом
     return 0;
 };
 
@@ -263,11 +402,17 @@ int test_Map()
         printf("%s", message);
         return 1;
     };
-    if (_test_delete_map(&message) == 1)
+    if (_test_delete_map(&message) == 1) // 2 / 7
     {
         printf("%s", message);
         return 1;
     };
+    if (_test_generate_map_landscape(&message) == 1)    // 3/7
+    {
+        printf("%s", message);
+        return 1;
+    };
+    
     if (_test_game_is_finished(&message) == 1)
     {
         printf("%s", message);
@@ -279,11 +424,6 @@ int test_Map()
         return 1;
     };
     if (_test_set_map_state(&message) == 1)
-    {
-        printf("%s", message);
-        return 1;
-    };
-    if (_test_generate_map_landscape(&message) == 1)
     {
         printf("%s", message);
         return 1;
