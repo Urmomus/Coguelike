@@ -1,13 +1,18 @@
 int generate_maps_content(GameMap *game_map);
 int renew_map_state(GameMap *game_map);
 int game_is_finished(GameMap *game_map, char *is_finished);
-GameMap* get_map_state(GameMap *game_map);
-int set_map_state(GameMap *game_map, GameMap *source);
 int move_player(GameMap *game_map, char dir);
-int _can_see_player(GameMap *game_map, int ind, char *ans);
+
 void move_monsters(GameMap *game_map);
 
 покрыты:
 int init_map(GameMap *game_map, MapSettings settings);
 int delete_map(GameMap *game_map);
 int generate_maps_landscape(GameMap *game_map);
+
+под сомнением, будут ли вообще такие функции:
+GameMap* get_map_state(GameMap *game_map);
+int set_map_state(GameMap *game_map, GameMap *source);
+
+Не требуют покрытия:
+int _can_see_player(GameMap *game_map, int ind, char *ans);	// приватная, скоро унесу в другой файл

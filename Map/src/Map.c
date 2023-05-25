@@ -33,7 +33,7 @@ LandsapeSettings;
 // константы
 
 const int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
-LandsapeSettings _std_settings = {34, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
+LandsapeSettings _std_settings = {30, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
 // приватные функции
 
@@ -701,16 +701,19 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
  */
 int generate_maps_content(GameMap *game_map)
 {
+	// проверяем, что нам не навалилил нулевых указателей
+	if (game_map == NULL)
+		return EMPTY_POINTER;
+
+	// проверяем, что карта была инициализирована
+	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
+		return MAP_ALREADY_DELETED;
+	
 	// создаём монстров и предметы (списки)
 
 	generate_monsters(game_map -> units_list, game_map -> units_num, game_map -> level);
 	generate_player(game_map -> units_list + PLAYER_INDEX, "Elpatio");
 	generate_loot(game_map -> items_list, game_map -> items_num, game_map -> level);
-
-	// пока заколхожу, что все монстры -- гоблины, а игрок -- под индексом PLAYER_INDEX
-	for (int i = 0; i < game_map -> units_num; ++i)
-		game_map -> units_list[i].unit_type = GOBLIN;
-	game_map -> units_list[PLAYER_INDEX].unit_type = PLAYER;
 
 	_place_objects_on_map(game_map, game_map -> items_num, 'i');
 	_place_objects_on_map(game_map, game_map -> units_num, 'u');
@@ -1049,7 +1052,8 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 			 &&
 			(now_dist + 1 <= _RADIUS_OF_SIGHT)
 			 &&
-			(game_map -> data[y[i]][x[i]].type != WALL_CELL)
+			(game_map -> data[y[i]][x[i]].type != WALL_CELL
+			)
 			)
 			{
 				++real_size; // размер увеличивается: вставляем в dirs новую клетку

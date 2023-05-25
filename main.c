@@ -18,7 +18,7 @@ void print_inventory(GameMap *game_map);
 
 int main()
 {
-    srand(5);
+    srand(6);
 
     char game_mode = 'g';    // g = game, i = inventory
 
