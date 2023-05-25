@@ -1,18 +1,23 @@
+#include "/mnt/c/Users/Momeiko/Documents/GitHub/Coguelike/renewscreen/renewscreen/renewscreen.h"
+#include "test_renewscreen.h"
+
 /***********
 /* @brief тестирует все функции библиотеки renewscreen
-/* @return 0, если корректно, 1, если ошибка
+/* @return 1, если корректно, 0, если ошибка
 */
 
-#include <stdio.h>
-
-int test_renewscreen(char **message)
+int test_renewscreen(int do_change)
 {
-    if (test_renew(message) == 1);
+    int error_code = renewscreen (do_change);
+
+    if (error_code == 1)
+        return 0;
+
+    if (error_code == 0)
+    {
         return 1;
-}
+    }
 
-int test_renew(char **message)
-{
-    int do_change = 1;
-    
+    return 0;
+
 }
