@@ -1,0 +1,18 @@
+all: buildView
+	gcc -I ./enemy_system/src -I ./Map/src -I ./View/src cringe_main.c -lMap -lEnemySystem -lView \
+	-L./Map/ -L./enemy_system/ -L./View/ -lncurses -lm -o ./bin/view_main
+
+# runTests: buildLibs
+# 	make -f TestMakefile
+
+
+# buildLibs: buildMap buildEnemySystem
+
+buildMap:
+	make -C ./Map/
+
+buildEnemySystem:
+	make -C ./enemy_system/
+
+buildView:
+	make -C ./View/
