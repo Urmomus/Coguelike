@@ -116,7 +116,7 @@ int _test_generate_map_content(char **message)
                         continue;
                     if (game_map.data[y][x].unit -> unit_type == PLAYER)
                     {
-                        printf("(%d, %d), %d\n", y, x, game_map.data[y][x].type == WALL_CELL);
+                        //printf("(%d, %d), %d\n", y, x, game_map.data[y][x].type == WALL_CELL);
                         player_is_placed = true;
                     };
                 };

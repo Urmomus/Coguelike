@@ -32,7 +32,7 @@ LandsapeSettings;
 
 // константы
 
-const int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
+int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
 LandsapeSettings _std_settings = {30, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
 // приватные функции
@@ -712,11 +712,21 @@ int generate_maps_content(GameMap *game_map)
 	// создаём монстров и предметы (списки)
 
 	generate_monsters(game_map -> units_list, game_map -> units_num, game_map -> level);
-	generate_player(game_map -> units_list + PLAYER_INDEX, "Elpatio");
 	generate_loot(game_map -> items_list, game_map -> items_num, game_map -> level);
 
 	_place_objects_on_map(game_map, game_map -> items_num, 'i');
 	_place_objects_on_map(game_map, game_map -> units_num, 'u');
+
+	// ищем первого размещённого моба и делаем его игроком
+	for (int i = 0; i < game_map->units_num; ++i)
+	{
+		if (!_unit_on_map(game_map, game_map -> units_list+i))
+			continue;
+		PLAYER_INDEX = i;
+		break;
+	}
+	generate_player(game_map -> units_list + PLAYER_INDEX, "Elpatio");
+	
 	return OK;
 };
 

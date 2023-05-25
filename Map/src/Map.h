@@ -47,7 +47,7 @@ typedef struct
 } GameMap;
 
 // переменные и константы
-extern const int PLAYER_INDEX;  // индекс, под которым в массиве units_list расположен игрок. 
+extern int PLAYER_INDEX;  // индекс, под которым в массиве units_list расположен игрок. 
 
 // функции
 
