@@ -1,6 +1,4 @@
-int renew_map_state(GameMap *game_map);
 int game_is_finished(GameMap *game_map, char *is_finished);
-int move_player(GameMap *game_map, char dir);
 void move_monsters(GameMap *game_map);
 
 покрыты:

@@ -47,6 +47,15 @@ char *GENERATE_MAP_CONTENT_WORKED_FOR_NON_INITIALIZED_MAP = "Ошибка в gen
 char *GENERATE_MAP_CONTENT_CANT_CREATE_CONTENT = "Ошибка в generate_maps_content: функция не отработала, хотя должна была!\n";
 char *GENERATE_MAP_CONTENT_MISSED_PLAYERS_PLACEMENT = "Ошибка в generate_maps_content: функция не разместила игрока на карту!\n";
 
+// ошибки для move_player
+char *MOVE_PLAYER_ERROR_WITH_NULL_POINTER = "Ошибка в move_player: функция отработала для nullptr!\n";
+char *MOVE_PLAYER_WORKED_FOR_NON_INITIALIZED_MAP = "Ошибка в move_player: функция отработала для неинициализированной карты!\n";
+char *MOVE_PLAYER_WORKED_FOR_INVALID_DIRECTION = "Ошибка в move_player: функция отработала для некорректного направления!\n";
+char *MOVE_PLAYER_DOESNT_WORK = "Ошибка в move_player: функция не отработала, хотя должна была!\n";
+char *MOVE_PLAYER_CAN_MOVE_IN_WALL_CELL = "Ошибка в move_player: игрок вписался в стену, и никаких ошибок не произошло!\n";
+char *MOVE_PLAYER_CAN_MOVE_OUT_OF_MAP = "Ошибка в move_player: игрок вышел за край карты, и никаких ошибок не произошло!\n";
+char *MOVE_PLAYER_ATTACK_ISNT_WORK = "Ошибка в move_player: игрок не убил противника, в которого вошёл!\n";
+
 // приватные функции
 
 
@@ -59,10 +68,100 @@ int _test_game_is_finished(char **message);
 int _test_init_map(char **message);                 // готова
 int _test_delete_map(char **message);               // готова
 int _test_generate_map_landscape(char **message);   // готова
-int _test_generate_map_content(char **message);
-
+int _test_generate_map_content(char **message);     // готова
+int _test_move_player(char **message);
 
 // реализации функций
+
+int _test_move_player(char **message)
+{
+    // проверяем, что ф-я корректно обрабатывает нулевые указатели на входе
+    if (move_player(NULL, 5) != EMPTY_POINTER)
+    {
+        *message = MOVE_PLAYER_ERROR_WITH_NULL_POINTER;
+        return 1;
+    };
+
+    GameMap game_map;
+    game_map.units_list = NULL;
+    game_map.items_list = NULL;
+    game_map.data = NULL;
+    
+    // проверяем, что ф-я корректно обрабатывает неинициализированную карту на входе
+    if (move_player(&game_map, 5) != MAP_ALREADY_DELETED)
+    {
+        *message = MOVE_PLAYER_WORKED_FOR_NON_INITIALIZED_MAP;
+        return 1;
+    };
+
+    MapSettings settings = {40, 40, 1};
+    init_map(&game_map, settings);  // эта ф-я уже оттещена
+    generate_maps_content(&game_map);   // эта ф-я уже оттещена
+
+    // проверяем, что игрок не станет ходить в непонятных направлениях
+    if (move_player(&game_map, 5) != INVALID_DIRECTION)
+    {
+        *message = MOVE_PLAYER_WORKED_FOR_INVALID_DIRECTION;
+        return 1;
+    };
+
+    srand(5);    // игрок гарантированно не у стенки
+    
+    // игрок совершает круг и один ход стоит
+    int dirs[5] = {'d', 'r', 'u', 'l', 's'};
+    for (int i = 0; i < 5; ++i)
+        if (move_player(&game_map, dirs[i]) != OK)
+        {
+            *message = MOVE_PLAYER_DOESNT_WORK;
+            return 1;
+        };
+
+
+    // получаем координаты игрока
+    int x = game_map.units_list[PLAYER_INDEX].x;
+    int y = game_map.units_list[PLAYER_INDEX].y;
+
+    // создаём под игроком стенку
+    game_map.data[y+1][x].type = WALL_CELL;
+
+    // пытаемся упереть игрока в стенку
+    if (move_player(&game_map, 'd') != MOVE_IS_IMPOSSIBLE)
+    {
+        *message = MOVE_PLAYER_CAN_MOVE_IN_WALL_CELL;
+        return 1;
+    };
+
+    // пытаемся упереть игрока в край карты
+    // 100 шагов -- на случай, если встретится монстр и игрок его убьёт
+    for (int i = 0; i < 100; ++i)
+    {
+        move_player(&game_map, 'r');
+    };
+    
+    // проверяем, что игрок не ушёл в край карты, а словил ошибку
+    if (move_player(&game_map, 'r') != MOVE_IS_IMPOSSIBLE)
+    {
+        *message = MOVE_PLAYER_CAN_MOVE_OUT_OF_MAP;
+        return 1;
+    };
+
+    // опытным путём выяснил, что конфигурация карты на начало тестов такая:
+    // игрок стоит на (12, 9)
+    // враг стоит на (21, 9)
+    // следовательно, при многократном движении вправо мы должны убить этого игрока
+
+    // враг по каким-то причинам не умер
+    if (game_map.units_list[1].hp > 0)
+    {
+        *message = MOVE_PLAYER_ATTACK_ISNT_WORK;
+        return 1;
+    };
+
+    // не забываем очистить память
+    delete_map(&game_map);  // эта ф-я уже оттещена
+
+    return 0;   // все тесты прошли успешно
+};
 
 int _test_generate_map_content(char **message)
 {
@@ -493,12 +592,16 @@ int test_Map()
         return 1;
     };
     
-    if(_test_generate_map_content(&message) == 1)
+    if(_test_generate_map_content(&message) == 1)   // 4 / 8
     {
         printf("%s", message);
         return 1;
     };
-
+    if (_test_move_player(&message) == 1)   // 5 / 8
+    {
+        printf("%s", message);
+        return 1;
+    }
     if (_test_game_is_finished(&message) == 1)
     {
         printf("%s", message);

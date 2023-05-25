@@ -8,17 +8,6 @@
 // если имя функции начинается с нижнего подчёркивания, то она исключительно внутрифайловая,
 // то есть, выставлять её прототип в .h я не буду
 
-enum Errors			// возможные ошибки
-{
-	NO_ERRORS, 					// нет ошибок
-	SIZE_ERROR,					// размеры карт при копировании не совпадают
-	MONSTER_OR_ITEMS_LEN_ERROR, // ошибка при копировании карты: не совпадает число монстров / предметов
-	INVALID_DIRECTION,			// некорректный символ направления (должен быть: 'u', 'd', 'l', 'r', 's')
-	MOVE_IS_IMPOSSIBLE,			// нельзя переместить юнита (в стену или за край карты)
-	CELL_IS_BUSY,				// на клетке, куда пытаются привязать юнита, уже что-то / кто-то есть
-	INVALID_INDEX,				// ошибка индексации при обращении к units_list или к items_list
-};
-
 // структура-контейнер для настроек компиляции
 typedef struct
 {
@@ -738,7 +727,7 @@ int generate_maps_content(GameMap *game_map)
 	@return код ошибки
 */
 int _move_unit(GameMap *game_map, int ind, char dir)
-{
+{	
 	// проверяем, что направление, куда пытаются переместить юнита, корректное
 	if (dir != 'l' && dir != 'r' && dir != 'u' && dir != 'd' && dir != 's')
 		return INVALID_DIRECTION;
@@ -811,9 +800,16 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 */
 int move_player(GameMap *game_map, char dir)
 {
-	// игрок -- это просто юнит под индексом PLAYER_INDEX
+	// проверяем, что нам не навалили нулевых указателей
+	if (game_map == NULL)
+		return EMPTY_POINTER;
+	
+	// проверяем, что не дали неинициализированную карту 
+	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
+		return MAP_ALREADY_DELETED;
+	
 	int err_code = _move_unit(game_map, PLAYER_INDEX, dir);
-	if (err_code)
+	if (err_code != NO_ERRORS)
 		return err_code;	// если ошибки -- возвращаем
 	
 	// если же всё прошло без ошибок, то надо проверить одну животрепещущую ситуацию, а именно -- 

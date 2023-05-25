@@ -66,13 +66,6 @@ int generate_maps_landscape(GameMap *game_map);
 int generate_maps_content(GameMap *game_map);
 
 /**
- * @brief обновляет состояние игровой карты
- * @param game_map игровая карта
- * @return код ошибки
- */
-int renew_map_state(GameMap *game_map);
-
-/**
  * @brief проверяет, окончилась ли игра на игровой карте
  * @param game_map игровая карта
  * @param is_finished сюда вернётся 1, если игра закончилась, и 0 в противном случае
