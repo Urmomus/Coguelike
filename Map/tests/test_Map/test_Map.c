@@ -52,27 +52,133 @@ char *MOVE_PLAYER_DOESNT_WORK = "Ошибка в move_player: функция н�
 char *MOVE_PLAYER_CAN_MOVE_IN_WALL_CELL = "Ошибка в move_player: игрок вписался в стену, и никаких ошибок не произошло!\n";
 char *MOVE_PLAYER_CAN_MOVE_OUT_OF_MAP = "Ошибка в move_player: игрок вышел за край карты, и никаких ошибок не произошло!\n";
 char *MOVE_PLAYER_ATTACK_ISNT_WORK = "Ошибка в move_player: игрок не убил противника, в которого вошёл!\n";
+char *MOVE_PLAYER_CAN_MOVE_DIED_PLAYER = "Ошибка в move_player: функция отработала для умершего игрока!\n";
+
+// ошибки для move_monsters
+char *MOVE_MONSTERS_ERROR_WITH_NULL_POINTER = "Ошибка в move_monsters: функция отработала для nullptr!\n";
+char *MOVE_MONSTERS_WORKED_FOR_NON_INITIALIZED_MAP = "Ошибка в move_monsters: функция отработала для неинициализированной карты!\n";
+char *MOVE_MONSTERS_DONT_MOVE_MONSTERS = "Ошибка в move_monsters: функция не отработала, хотя и игрок, и монстры были живы!\n";
+char *MOVE_MONSTERS_DONT_ATTACK = "Ошибка в move_monsters: монстр не смог атаковать игрока!\n";
+char *MOVE_MONSTERS_DONT_WORK_WITH_DEAD_PLAYER = "Ошибка в move_monsters: функция не отработала, когда игрок был мёртв!\n";
+char *MOVE_MONSTERS_DONT_WORK_WITH_DEAD_MONSTERS = "Ошибка в move_monsters: функция не отработала, когда монстры были мёртвы!\n";
 
 // приватные функции
 
-
-/*
-int _test_get_map_state(char **message);
-int _test_set_map_state(char **message);
-*/
-
-int _test_game_is_finished(char **message);
+int _test_game_is_finished(char **message);         // готова
 int _test_init_map(char **message);                 // готова
 int _test_delete_map(char **message);               // готова
 int _test_generate_map_landscape(char **message);   // готова
 int _test_generate_map_content(char **message);     // готова
 int _test_move_player(char **message);              // готова
+int _test_move_monsters(char **message);              // готова
 
 // реализации функций
 
+/***********
+/* @brief тест на функцию move_monsters
+/* @param message сообщение об ошибке
+/* @return 0, если корректно, 1, если ошибка
+*/
+int _test_move_monsters(char **message)
+{
+    srand(6);   // фиксируем все рандомные значения между запусками
+
+    // проверяем, что ф-я корректно обрабатывает нулевые указатели на входе
+    if (move_monsters(NULL) != EMPTY_POINTER)
+    {
+        *message = MOVE_MONSTERS_ERROR_WITH_NULL_POINTER;
+        return 1;
+    };
+
+    GameMap game_map;
+    game_map.data = NULL;
+    game_map.items_list = NULL;
+    game_map.units_list = NULL;
+    // на таких настройках генерируется ровно один монстр, стоящий в упор к игроку
+    MapSettings settings = {20, 20, 4};
+
+    if (move_monsters(&game_map) != MAP_ALREADY_DELETED)
+    {
+        *message = MOVE_MONSTERS_WORKED_FOR_NON_INITIALIZED_MAP;
+        return 1;
+    };
+
+    init_map(&game_map, settings);  // функция уже оттещена
+
+    // делаем карту кристалльно чистой, чтобы игрок и мобы могли свободно передвигаться
+    // обычно это делается в generate_maps_landscape, но сейчас, для простоты тестов, я сделаю это здесь
+    for (int y = 0; y < game_map.size_y; ++y)
+        for (int x = 0; x < game_map.size_x; ++x)
+        {
+            game_map.data[y][x].type = FREE_CELL;   // стираем все стены
+            game_map.data[y][x].unit = NULL;   // нет мобов
+            game_map.data[y][x].item = NULL;   // и нет предметов
+        
+        };
+
+    // создаём игрока и мобов
+    generate_maps_content(&game_map);   // функция уже оттещена
+
+    // сохраняем координаты моба
+    int ox = game_map.units_list[1].x;
+    int oy = game_map.units_list[1].y;
+
+    int ohp = game_map.units_list[PLAYER_INDEX].hp; // сохраняем координаты игрока
+
+    // проверяем, что функция корректно выполняется, когда все мобы живые и игрок живой
+    for (int i = 0; i < 1; ++i)
+        if (move_monsters(&game_map) != OK)
+        {
+            *message = MOVE_MONSTERS_DONT_MOVE_MONSTERS;
+            return 1;
+        };
+
+    //printf("%d\n", game_map.units_list[PLAYER_INDEX].hp);
+    if (ohp == game_map.units_list[PLAYER_INDEX].hp)
+    {
+        *message = MOVE_MONSTERS_DONT_ATTACK;
+        return 1;
+    }
+
+    // убиваем игрока
+    game_map.units_list[PLAYER_INDEX].x = -1;
+    game_map.units_list[PLAYER_INDEX].y = -1;
+
+    // смотрим, как поведёт себя функция
+    if (move_monsters(&game_map) != OK)
+    {
+        *message = MOVE_MONSTERS_DONT_WORK_WITH_DEAD_PLAYER;
+        return 1;
+    };
+
+    // теперь убиваем всех монстров
+    for (int i = 0; i < game_map.units_num; ++i)
+        game_map.units_list[i].x = game_map.units_list[i].y = -1;
+    
+    // и смотрим, что функция всё равно отработает корректно
+    if (move_monsters(&game_map) != OK)
+    {
+        *message = MOVE_MONSTERS_DONT_WORK_WITH_DEAD_MONSTERS;
+        return 1;
+    };
+
+    // эхо-печать положений всех юнитов
+    //for (int i = 0; i < game_map.units_num; ++i)
+    //{
+    //    int x = game_map.units_list[i].x;
+    //    int y = game_map.units_list[i].y;
+    //    printf("(%d, %d)\n", x, y);
+    //}
+
+    // не забываем почистить память
+    delete_map(&game_map);  // функция уже оттещена
+
+    return 0;
+};         
 
 /***********
 /* @brief тест на функцию game_is_finished
+/* @param message сообщение об ошибке
 /* @return 0, если корректно, 1, если ошибка
 */
 int _test_game_is_finished(char **message)
@@ -179,7 +285,11 @@ int _test_game_is_finished(char **message)
     return 0;
 };
 
-
+/***********
+/* @brief тест на функцию move_player
+/* @param message сообщение об ошибке
+/* @return 0, если корректно, 1, если ошибка
+*/
 int _test_move_player(char **message)
 {
     srand(6);    // игрок гарантированно не у стенки
@@ -282,6 +392,14 @@ int _test_move_player(char **message)
         return 1;
     };
     
+    // убиваем игрока
+    game_map.units_list[PLAYER_INDEX].x = game_map.units_list[PLAYER_INDEX].y = -1;
+    
+    if (move_player(&game_map, 'l') != UNIT_IS_DIED)
+    {
+        *message = MOVE_PLAYER_CAN_MOVE_DIED_PLAYER;
+        return 1;
+    }
 
     // не забываем очистить память
     delete_map(&game_map);  // эта ф-я уже оттещена
@@ -289,6 +407,11 @@ int _test_move_player(char **message)
     return 0;   // все тесты прошли успешно
 };
 
+/***********
+/* @brief тест на функцию generate_maps_content
+/* @param message сообщение об ошибке
+/* @return 0, если корректно, 1, если ошибка
+*/
 int _test_generate_map_content(char **message)
 {
     // проверяем, что нулевые указатели отлавливаются
@@ -424,6 +547,11 @@ int cnt_places(GameMap *game_map)
     return zones_cnt;
 };
 
+/***********
+/* @brief тест на функцию generate_maps_landscape
+/* @param message сообщение об ошибке
+/* @return 0, если корректно, 1, если ошибка
+*/
 int _test_generate_map_landscape(char **message)
 {
     GameMap game_map;
@@ -498,6 +626,7 @@ int _test_generate_map_landscape(char **message)
 
 /***********
 /* @brief тест на функцию init_map
+/* @param message сообщение об ошибке
 /* @return 0, если корректно, 1, если ошибка
 */
 int _test_init_map(char **message)
@@ -617,6 +746,7 @@ int _test_init_map(char **message)
 
 /***********
 /* @brief тест на функцию delete_map
+/* @param message сообщение об ошибке
 /* @return 0, если корректно, 1, если ошибка
 */
 int _test_delete_map(char **message)
@@ -701,7 +831,12 @@ int test_Map()
         printf("%s", message);
         return 1;
     }
-    if (_test_game_is_finished(&message) == 1)
+    if (_test_game_is_finished(&message) == 1)  // 6 / 7
+    {
+        printf("%s", message);
+        return 1;
+    };
+    if (_test_move_monsters(&message) == 1) // 7 / 7
     {
         printf("%s", message);
         return 1;

@@ -125,7 +125,8 @@ int _can_see_player(GameMap *game_map, int ind, char *ans);
 /*******
 	@brief передвигает монстров на карте в сторону игрока, если игрок находится в их поле зрения
 	@param game_map карта, где происходит действие
+	@return код ошибки
 */
-void move_monsters(GameMap *game_map);
+int move_monsters(GameMap *game_map);
 
 #endif

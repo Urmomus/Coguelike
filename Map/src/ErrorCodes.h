@@ -14,6 +14,7 @@ enum ErrorCodes
 	MOVE_IS_IMPOSSIBLE,			// нельзя переместить юнита (в стену или за край карты)
 	CELL_IS_BUSY,				// на клетке, куда пытаются привязать юнита, уже что-то / кто-то есть
 	INVALID_INDEX,				// ошибка индексации при обращении к units_list или к items_list
+	UNIT_IS_DIED,				// игрок мёртв
 };
 
 #endif

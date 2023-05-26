@@ -729,6 +729,9 @@ int generate_maps_content(GameMap *game_map)
 */
 int _move_unit(GameMap *game_map, int ind, char dir)
 {	
+	if (!_unit_on_map(game_map, game_map -> units_list + ind))
+		return UNIT_IS_DIED;
+
 	// проверяем, что направление, куда пытаются переместить юнита, корректное
 	if (dir != 'l' && dir != 'r' && dir != 'u' && dir != 'd' && dir != 's')
 		return INVALID_DIRECTION;
@@ -817,13 +820,14 @@ int move_player(GameMap *game_map, char dir)
 	// не оказался ли игрок на переходе на след. уровень.
 	int x = game_map -> units_list[PLAYER_INDEX].x;
 	int y = game_map -> units_list[PLAYER_INDEX].y;
-	
+
 	// если мы попали не на клетку перехода -- то по барабану, на какую: возвращаем ОК
 	if (game_map -> data[y][x].type != FINISH_CELL)
 		return OK;
 	
 	// здесь мы, получается, встали на клетку перехода на следующий уровень
 	_next_level(game_map);
+	return OK;
 	
 };
 
@@ -891,7 +895,7 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 };
 
 
-const int _RADIUS_OF_SIGHT = 10;	// радиус взора для монстров
+const int _RADIUS_OF_SIGHT = 4;	// радиус взора для монстров
 /***
 	@brief определяет, может ли юнит увидеть игрока
 	@param game_map игровая карта, где происходит действие
@@ -947,9 +951,18 @@ int _index_is_correct(GameMap *game_map, int ind, char type)
 /*******
 	@brief передвигает монстров на карте в сторону игрока, если игрок находится в их поле зрения
 	@param game_map карта, где происходит действие
+	@return код ошибки
 */
-void move_monsters(GameMap *game_map)
+int move_monsters(GameMap *game_map)
 {
+	// проверяем, что не навалили нулевых указателей
+	if (game_map == NULL)
+		return EMPTY_POINTER;
+
+	// проверяем, что на вход не поступила неинициализированная карта
+	if (game_map -> units_list == NULL || game_map -> items_list == NULL || game_map -> data == NULL)
+		return MAP_ALREADY_DELETED;
+
 	// с единицы -- потому что нулевой -- игрок
 	for (int ind = PLAYER_INDEX + 1; ind < game_map -> units_num; ++ind)
 	{
@@ -973,7 +986,7 @@ void move_monsters(GameMap *game_map)
 		char direction = _cnt_direction_for_move(game_map, ind);
 		_move_unit(game_map, ind, direction);
 	};
-	getchar();
+	return OK;
 };
 
 // структура клетки для реализации BFS
