@@ -48,6 +48,7 @@ typedef struct
 
 // переменные и константы
 extern int PLAYER_INDEX;  // индекс, под которым в массиве units_list расположен игрок. 
+extern const int MAX_LEVEL;	// кол-во уровней в игре
 
 // функции
 

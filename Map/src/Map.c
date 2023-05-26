@@ -19,9 +19,10 @@ typedef struct
 LandsapeSettings;	
 
 
-// константы
+// константы да переменные
 
 int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
+const int MAX_LEVEL = 10;
 LandsapeSettings _std_settings = {30, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
 // приватные функции
@@ -1250,4 +1251,37 @@ int _next_level(GameMap *game_map)
 	init_map(game_map, next_level_settings);
 	generate_maps_landscape(game_map);
 	generate_maps_content(game_map);
+};
+
+/**
+ * @brief проверяет, окончилась ли игра на игровой карте
+ * @param game_map игровая карта
+ * @param is_finished сюда вернётся 1, если игра закончилась, и 0 в противном случае
+ * @return код ошибки
+ */
+int game_is_finished(GameMap *game_map, char *is_finished)
+{
+	// проверяем, что не навалилили нулевых указателей
+	if (game_map == NULL || is_finished == NULL)
+		return EMPTY_POINTER;
+	// проверяем, что не дали неинициализированную карту
+	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
+		return MAP_ALREADY_DELETED;
+	
+	// предположим, что игра закончилась
+	*is_finished = 0;
+
+	// когда это не так?
+	// случай 1: игрок мёртв.
+	// случай 2: level > max_level
+
+	// случай 1
+	if (_unit_on_map(game_map, game_map -> units_list + PLAYER_INDEX) == 0)
+		*is_finished = 1;
+	//printf("HUI\n");
+	// случай 2
+	if (game_map -> level > MAX_LEVEL)
+		*is_finished = 1;
+
+	return OK;
 };

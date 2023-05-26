@@ -17,14 +17,11 @@ char *INIT_MAP_ERROR_WITH_SETTINGS = "Ошибка в init_map: при иниц�
 
 // ошибки для game_is_finished
 char* GAME_IS_FINISHED_ERROR_WITH_NULL = "Ошибка в game_is_finished: функция отработала для нулевого указателя!\n";
-
-
-// ошибки для get_map_state
-char* GET_MAP_STATE_ERROR_WITH_NULL = "Ошибка в get_map_state: функция отработала для нулевого указателя!\n";
-
-
-// ошибки для set_map_state
-char* SET_MAP_STATE_ERROR_WITH_NULL = "Ошибка в set_map_state: функция отработала для нулевого указателя!\n";
+char* GAME_IS_FINISHED_WORKED_FOR_NON_INITIALIZED_MAP = "Ошибка в game_is_finished: функция отработала для неинициализированной карты!\n";
+char* GAME_IS_FINISHED_DOESNT_WORK = "Ошибка в game_is_finished: функция не отработала, хотя должна была!\n";
+char* GAME_IS_FINISHED_ERROR_WITH_GOING_GAME = "Ошибка в game_is_finished: функция сказала, что игра закончилась, хотя игра ещё идёт!\n";
+char* GAME_IS_FINISHED_ERROR_WITH_GAME_FINISHED_BY_LEVEL = "Ошибка в game_is_finished: функция не увидела, что в игре наступил уровень, больший, чем последний уровень!\n";
+char* GAME_IS_FINISHED_ERROR_WITH_GAME_FINISHED_BY_DEATH = "Ошибка в game_is_finished: функция не увидела, что игрок умер!\n";
 
 
 // ошибки для delete_map
@@ -69,12 +66,123 @@ int _test_init_map(char **message);                 // готова
 int _test_delete_map(char **message);               // готова
 int _test_generate_map_landscape(char **message);   // готова
 int _test_generate_map_content(char **message);     // готова
-int _test_move_player(char **message);
+int _test_move_player(char **message);              // готова
 
 // реализации функций
 
+
+/***********
+/* @brief тест на функцию game_is_finished
+/* @return 0, если корректно, 1, если ошибка
+*/
+int _test_game_is_finished(char **message)
+{
+    char is_finished;
+    // проверяем, что корректно обрабатывает случай, когда game_map = NULL
+    if (game_is_finished(NULL, &is_finished) != EMPTY_POINTER)
+    {
+        *message = GAME_IS_FINISHED_ERROR_WITH_NULL;
+        return 1;
+    };
+
+    GameMap game_map;
+    game_map.data = NULL;
+    game_map.items_list = NULL;
+    game_map.units_list = NULL;
+
+    // проверяем, что корректно обрабатывает случай, когда is_finished = NULL
+    if (game_is_finished(&game_map, NULL) != EMPTY_POINTER)
+    {
+        *message = GAME_IS_FINISHED_ERROR_WITH_NULL;
+        return 1;
+    };
+
+    // проверяем, что корректно обрабатываем неинициализированную карту
+    if (game_is_finished(&game_map, &is_finished) != MAP_ALREADY_DELETED)
+    {
+        *message = GAME_IS_FINISHED_WORKED_FOR_NON_INITIALIZED_MAP;
+        return 1;
+    };
+
+    MapSettings settings = {40, 40, 3};
+    init_map(&game_map, settings);  // функция уже оттещена
+
+    // делаем карту кристалльно чистой, чтобы игрок и мобы могли свободно передвигаться
+    // обычно это делается в generate_maps_landscape, но сейчас, для простоты тестов, я сделаю это здесь
+    for (int y = 0; y < game_map.size_y; ++y)
+        for (int x = 0; x < game_map.size_x; ++x)
+        {
+            game_map.data[y][x].type = FREE_CELL;   // стираем все стены
+            game_map.data[y][x].unit = NULL;   // нет мобов
+            game_map.data[y][x].item = NULL;   // и нет предметов
+        
+        };
+
+    // создаём игрока и мобов
+    generate_maps_content(&game_map);   // функция уже оттещена
+
+    // а здесь уже, на инициализированной карте и с выставленным игроком, ф-я должна отработать корректно
+    if (game_is_finished(&game_map, &is_finished) != OK)
+    {
+        *message = GAME_IS_FINISHED_DOESNT_WORK;
+        return 1;
+    };
+
+    // ф-я вернула, что игра уже закончилась, хотя игрок только что был выставлен на карту
+    if (is_finished != 0)
+    {
+        *message = GAME_IS_FINISHED_ERROR_WITH_GOING_GAME;
+        return 1;
+    };
+
+    // теперь нам надо выйти с последнего уровня
+    game_map.level = MAX_LEVEL + 1;
+
+    // запускаем ф-ю и смотрим, что она корректно завершилась
+    if (game_is_finished(&game_map, &is_finished) != OK)
+    {
+        *message = GAME_IS_FINISHED_DOESNT_WORK;
+        return 1;
+    };
+
+
+    // игра должна была закончиться
+    if (is_finished != 1)
+    {
+        *message = GAME_IS_FINISHED_ERROR_WITH_GAME_FINISHED_BY_LEVEL;
+        return 1;
+    };
+
+    game_map.level = 1;
+    
+    // теперь нам надо выйти по причине, что игрок откинулся
+    game_map.units_list[PLAYER_INDEX].x = -1;
+    game_map.units_list[PLAYER_INDEX].y = -1;
+
+    // запускаем ф-ю и смотрим, что она корректно завершилась
+    if (game_is_finished(&game_map, &is_finished) != OK)
+    {
+        *message = GAME_IS_FINISHED_DOESNT_WORK;
+        return 1;
+    };
+
+    // игра должна была закончиться
+    if (is_finished != 1)
+    {
+        *message = GAME_IS_FINISHED_ERROR_WITH_GAME_FINISHED_BY_DEATH;
+        return 1;
+    };
+
+    // не забываем почистить память
+    delete_map(&game_map);  // ф-я уже оттещена
+
+    return 0;
+};
+
+
 int _test_move_player(char **message)
 {
+    srand(6);    // игрок гарантированно не у стенки
     // проверяем, что ф-я корректно обрабатывает нулевые указатели на входе
     if (move_player(NULL, 5) != EMPTY_POINTER)
     {
@@ -96,6 +204,18 @@ int _test_move_player(char **message)
 
     MapSettings settings = {40, 40, 1};
     init_map(&game_map, settings);  // эта ф-я уже оттещена
+
+    // делаем карту кристалльно чистой, чтобы игрок и мобы могли свободно передвигаться
+    // обычно это делается в generate_maps_landscape, но сейчас, для простоты тестов, я сделаю это здесь
+    for (int y = 0; y < game_map.size_y; ++y)
+        for (int x = 0; x < game_map.size_x; ++x)
+        {
+            game_map.data[y][x].type = FREE_CELL;   // стираем все стены
+            game_map.data[y][x].unit = NULL;   // нет мобов
+            game_map.data[y][x].item = NULL;   // и нет предметов
+        
+        };
+
     generate_maps_content(&game_map);   // эта ф-я уже оттещена
 
     // проверяем, что игрок не станет ходить в непонятных направлениях
@@ -104,8 +224,6 @@ int _test_move_player(char **message)
         *message = MOVE_PLAYER_WORKED_FOR_INVALID_DIRECTION;
         return 1;
     };
-
-    srand(5);    // игрок гарантированно не у стенки
     
     // игрок совершает круг и один ход стоит
     int dirs[5] = {'d', 'r', 'u', 'l', 's'};
@@ -115,8 +233,7 @@ int _test_move_player(char **message)
             *message = MOVE_PLAYER_DOESNT_WORK;
             return 1;
         };
-
-
+    
     // получаем координаты игрока
     int x = game_map.units_list[PLAYER_INDEX].x;
     int y = game_map.units_list[PLAYER_INDEX].y;
@@ -145,9 +262,17 @@ int _test_move_player(char **message)
         return 1;
     };
 
+    // эхо-печать положений всех юнитов
+    //for (int i = 0; i < game_map.units_num; ++i)
+    //{
+    //    int x = game_map.units_list[i].x;
+    //    int y = game_map.units_list[i].y;
+    //    printf("(%d, %d)\n", x, y);
+    //}
+
     // опытным путём выяснил, что конфигурация карты на начало тестов такая:
-    // игрок стоит на (12, 9)
-    // враг стоит на (21, 9)
+    // игрок стоит на (7, 2)
+    // враг стоит на (17, 2)
     // следовательно, при многократном движении вправо мы должны убить этого игрока
 
     // враг по каким-то причинам не умер
@@ -156,6 +281,7 @@ int _test_move_player(char **message)
         *message = MOVE_PLAYER_ATTACK_ISNT_WORK;
         return 1;
     };
+    
 
     // не забываем очистить память
     delete_map(&game_map);  // эта ф-я уже оттещена
@@ -188,7 +314,7 @@ int _test_generate_map_content(char **message)
     //return 0;
     // проверяем для разных конфигураций
     for (int seed = 0; seed <= 15; ++seed)
-        for (int level = 1; level <= 10; ++level)
+        for (int level = 1; level <= MAX_LEVEL; ++level)
         {
             //printf("CONF: %d, %d\n", seed, level);
             // даём конфигурацию
@@ -335,10 +461,10 @@ int _test_generate_map_landscape(char **message)
     delete_map(&game_map);  // эта функция уже оттещена
 
     // теперь мы делаем что: мы создаём разные конфигурации карты и смотрим:
-    for (int seed = 0; seed < 15; ++seed)
+    for (int seed = 0; seed <= 15; ++seed)
     {
         srand(seed);
-        for (int level = 1; level < 10; ++level)
+        for (int level = 1; level <= MAX_LEVEL; ++level)
         {
             settings.size_x = settings.size_y = level * 10; // чтобы размеры карты также изменялись
 
@@ -367,33 +493,6 @@ int _test_generate_map_landscape(char **message)
         };
     };
     // не могу больше придумать проблем с ландшафтом
-    return 0;
-};
-
-/***********
-/* @brief тест на функцию game_is_finished
-/* @return 0, если корректно, 1, если ошибка
-*/
-int _test_game_is_finished(char **message)
-{
-    return 0;
-};
-
-/***********
-/* @brief тест на функцию get_map_state
-/* @return 0, если корректно, 1, если ошибка
-*/
-int _test_get_map_state(char **message)
-{
-    return 0;
-};
-
-/***********
-/* @brief тест на функцию set_map_state
-/* @return 0, если корректно, 1, если ошибка
-*/
-int _test_set_map_state(char **message)
-{
     return 0;
 };
 
@@ -597,7 +696,7 @@ int test_Map()
         printf("%s", message);
         return 1;
     };
-    if (_test_move_player(&message) == 1)   // 5 / 8
+    if (_test_move_player(&message) == 1)   // 5 / 7
     {
         printf("%s", message);
         return 1;
@@ -607,17 +706,5 @@ int test_Map()
         printf("%s", message);
         return 1;
     };
-    /*
-    if (_test_get_map_state(&message) == 1)
-    {
-        printf("%s", message);
-        return 1;
-    };
-    if (_test_set_map_state(&message) == 1)
-    {
-        printf("%s", message);
-        return 1;
-    };
-    */
     return 0;
 };
