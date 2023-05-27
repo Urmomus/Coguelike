@@ -97,6 +97,7 @@ int _test_move_monsters(char **message)
     // на таких настройках генерируется ровно один монстр, стоящий в упор к игроку
     MapSettings settings = {20, 20, 4};
 
+    // проверяем, что ф-я вернёт ошибку при неинициализированной карте
     if (move_monsters(&game_map) != MAP_ALREADY_DELETED)
     {
         *message = MOVE_MONSTERS_WORKED_FOR_NON_INITIALIZED_MAP;
@@ -425,6 +426,7 @@ int _test_generate_map_content(char **message)
     game_map.data = NULL;
     game_map.items_list = NULL;
     game_map.units_list = NULL;
+
     // проверяем, что неинициализированная карта отлавливается
     if (generate_maps_content(&game_map) != MAP_ALREADY_DELETED)
     {

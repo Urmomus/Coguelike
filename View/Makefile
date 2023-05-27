@@ -1,3 +1,4 @@
+#<<<<<<< HEAD
 TARGET = libView
 CC = gcc
 
@@ -15,3 +16,9 @@ ${PREF_OBJ}%.o: ${PREF_SRC}%.c
 
 clean:
 	rm ${TARGET} ${OBJ}
+#=======
+empty: emptyAr
+	touch ./obj/empty.o
+
+emptyAr:
+	ar r libView.a
