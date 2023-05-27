@@ -13,24 +13,21 @@ const char *PLAYER_NAMES[50] = {
 
 // Я хочу есть
 const char *SLIME_NAMES[50] = {
-    "Боба", "Герри", "Вжух", "Беззуб", "Барон де Улит", "Желатинис", "Агарыч", "Желфикс",
-    "Студень", "Бланманж", "Паннакот", "Холодец", "Зефирус", "Кисель"
-};
+    "Bubba", "Gerry", "Whoosh", "Toothless", "Baron de Snailion", "Gelatinis", "Agaron", "Jellfix",
+    "Jelleron", "Blancmange", "Panna", "Cotta", "Zephyris", "Kissel"};
 
 const char *GOBLIN_NAMES[50] = {
-    "Куконя", "Челибоб", "Красавчик", "Ржаволюгс", "Веслобумс", "Быстротукс",
-    "Карамутикс", "Грун", "Ольеггс"
-};
+    "Kukonya", "Chelibob", "Guy", "Rustlugs", "Paddlears", "Rapitux",
+    "Karamutix", "Groon", "Olezha"};
 
 const char *SKELETON_NAMES[50] = {
-    "Костик", "Ветчина", "Ефстрат Гемоглобинович", "Кеша", "Жмурик", "Бон Джови",
-    "Бона Лиза", "Черепица", "Погремуш", "Мукомол", "Бон Апарт", "Бонд", "Костя",
-    "Константин"
-};
+    "Костик", "Ham", "Hemoglobin the second", "Kesha", "Deadling", "Bone Jovi",
+    "Bona Lisa", "Shingles", "Rattler", "Miller", "Bone apart", "Boned", "Konstantin",
+    "Constantin"};
 
 const char *GHOST_NAMES[50] = {
-    "Жертва сессии", "Бабадук", "Каспер", "Бууу", "Кринч", "Домовой", "Слепошар",
-    "Онотоле", "Гномыч", "Карапет", "Разумистыч", "Могилич", "Викернес"
+    "Exam victim", "Babadook", "Casper", "Booo", "Crinch", "Pixy", "Myop",
+    "Onotole", "Gnomych", "Karapetyan", "Mind east", "Gravey", "Vikernes"
 
 };
 
@@ -388,6 +385,9 @@ ExceptionStatus equip_from_inventory(Unit *unit, int item_index)
 
     exception = is_equipped(unit, item_index, &equipped);
 
+    if (equipped)
+        return ITEM_IS_EQUIPPED;
+
     if (exception)
         return exception;
 
@@ -462,9 +462,6 @@ ExceptionStatus is_equipped(Unit *unit, int item_index, bool *is_equipped)
     if (item == NULL)
         return INVALID_ITEM_INDEX;
 
-    if (item->type == CONSUMABLE)
-        return NOT_EQUIPPABLE;
-
     switch (item->type)
     {
     case HEAD:
@@ -503,7 +500,8 @@ ExceptionStatus is_equipped(Unit *unit, int item_index, bool *is_equipped)
             return OK;
 
     default:
-        return NOT_EQUIPPABLE;
-        break;
+            *is_equipped = false;
+            return NOT_EQUIPPABLE;
+            break;
     }
 }

@@ -21,7 +21,7 @@ ExceptionStatus _generate_consumable(Item *item, int level)
     item->type = CONSUMABLE;
     item->uses = 1;
     item->effects = effects;
-    item->name = "Неподозрительное зелье";
+    item->name = "Suspicious potion";
 }
 
 ExceptionStatus _generate_equipable(Item *item, int level)
@@ -32,27 +32,27 @@ ExceptionStatus _generate_equipable(Item *item, int level)
 
     if (item->type == HEAD)
     {
-        item->name = "Шелом";
+        item->name = "Helmet";
         effect->type = HP_UP;
     }
     if (item->type == BODY)
     {
-        item->name = "Нагрудник";
+        item->name = "Chestplate";
         effect->type = DEFENSE_UP;
     }
     if (item->type == LEFT_HAND)
     {
-        item->name = "Щит";
+        item->name = "Shield";
         effect->type = DEFENSE_UP;
     }
     if (item->type == RIGHT_HAND)
     {
-        item->name = "Меч";
+        item->name = "Sword";
         effect->type = DMG_UP;
     }
     if (item->type == LEGS)
     {
-        item->name = "Штаны";
+        item->name = "Leggings";
         effect->type = HP_UP;
     }
 
