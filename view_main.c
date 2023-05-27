@@ -30,7 +30,7 @@ int main()
     err_code = generate_maps_content(&game_map);
 
     int game_is_finished = false;
-    for (; !game_is_finished;)
+    do
     {
         if (game_mode == 'g')
         {
@@ -126,7 +126,8 @@ int main()
 
             move_monsters(&game_map);
         }
-    };
+    }
+    while (!game_is_finished);
 
     err_code = delete_map(&game_map);
 };
