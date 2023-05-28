@@ -216,7 +216,7 @@ ExceptionStatus generate_monsters(Unit *monsters, int size, int level)
 
 ExceptionStatus generate_player(Unit *player, char* player_name)
 {
-    Item items[256] = {0};
+    Item *items = calloc(256, sizeof(Item));
     Inventory inventory = {items, 0, 256};
     EquippedSlots slots = {
         -1,
