@@ -60,11 +60,11 @@ typedef struct
 
 typedef struct
 {
-    Item *head;
-    Item *right_hand;
-    Item *left_hand;
-    Item *legs;
-    Item *body;
+    int head;
+    int right_hand;
+    int left_hand;
+    int legs;
+    int body;
 } EquippedSlots;
 
 typedef struct

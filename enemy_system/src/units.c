@@ -174,23 +174,23 @@ Item *get_item_by_slot(Unit *unit, ItemType type)
     switch (type)
     {
     case HEAD:
-        return unit->equipped_slots.head;
+        return unit->inventory.items + unit->equipped_slots.head;
         break;
 
     case BODY:
-        return unit->equipped_slots.body;
+        return unit->inventory.items + unit->equipped_slots.body;
         break;
 
     case RIGHT_HAND:
-        return unit->equipped_slots.right_hand;
+        return unit->inventory.items + unit->equipped_slots.right_hand;
         break;
 
     case LEFT_HAND:
-        return unit->equipped_slots.left_hand;
+        return unit->inventory.items + unit->equipped_slots.left_hand;
         break;
 
     case LEGS:
-        return unit->equipped_slots.legs;
+        return unit->inventory.items + unit->equipped_slots.legs;
         break;
 
     default:
@@ -219,11 +219,11 @@ ExceptionStatus generate_player(Unit *player, char* player_name)
     Item items[256] = {0};
     Inventory inventory = {items, 0, 256};
     EquippedSlots slots = {
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
     };
 
     player->unit_type = PLAYER;
@@ -332,51 +332,51 @@ ExceptionStatus delete_from_inventory(Unit *unit, int item_index)
     return OK;
 }
 
-ExceptionStatus equip(Unit *unit, Item *item)
+ExceptionStatus equip(Unit *unit, Item *item, int item_index)
 {
     switch (item->type)
     {
     case HEAD:
-        if (unit->equipped_slots.head != NULL)
+        if (unit->equipped_slots.head != -1)
             return SLOT_IS_USED;
 
-        unit->equipped_slots.head = item;
+        unit->equipped_slots.head = item_index;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case BODY:
-        if (unit->equipped_slots.body != NULL)
+        if (unit->equipped_slots.body != -1)
             return SLOT_IS_USED;
 
-        unit->equipped_slots.body = item;
+        unit->equipped_slots.body = item_index;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case RIGHT_HAND:
-        if (unit->equipped_slots.right_hand != NULL)
+        if (unit->equipped_slots.right_hand != -1)
             return SLOT_IS_USED;
 
-        unit->equipped_slots.right_hand = item;
+        unit->equipped_slots.right_hand = item_index;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case LEFT_HAND:
-        if (unit->equipped_slots.left_hand != NULL)
+        if (unit->equipped_slots.left_hand != -1)
             return SLOT_IS_USED;
 
-        unit->equipped_slots.left_hand = item;
+        unit->equipped_slots.left_hand = item_index;
         _apply_effect(unit, item->effects);
         return OK;
         break;
 
     case LEGS:
-        if (unit->equipped_slots.legs != NULL)
+        if (unit->equipped_slots.legs != -1)
             return SLOT_IS_USED;
 
-        unit->equipped_slots.legs = item;
+        unit->equipped_slots.legs = item_index;
         _apply_effect(unit, item->effects);
         return OK;
         break;
@@ -404,7 +404,7 @@ ExceptionStatus equip_from_inventory(Unit *unit, int item_index)
     if (exception)
         return exception;
 
-    exception = equip(unit, item);
+    exception = equip(unit, item, item_index);
     if (exception)
         return exception;
 
@@ -417,46 +417,46 @@ ExceptionStatus unequip(Unit *unit, ItemType item_type)
     switch (item_type)
     {
     case HEAD:
-        if (unit->equipped_slots.head == NULL)
+        if (unit->equipped_slots.head == -1)
             return SLOT_IS_NOT_USED;
 
-        unit->equipped_slots.head = NULL;
+        unit->equipped_slots.head = -1;
         _unapply_effect(unit, item->effects);
         return OK;
         break;
 
     case BODY:
-        if (unit->equipped_slots.body == NULL)
+        if (unit->equipped_slots.body == -1)
             return SLOT_IS_NOT_USED;
 
-        unit->equipped_slots.body = NULL;
+        unit->equipped_slots.body = -1;
         _unapply_effect(unit, item->effects);
         return OK;
         break;
 
     case RIGHT_HAND:
-        if (unit->equipped_slots.right_hand == NULL)
+        if (unit->equipped_slots.right_hand == -1)
             return SLOT_IS_NOT_USED;
 
-        unit->equipped_slots.right_hand = NULL;
+        unit->equipped_slots.right_hand = -1;
         _unapply_effect(unit, item->effects);
         return OK;
         break;
 
     case LEFT_HAND:
-        if (unit->equipped_slots.left_hand == NULL)
+        if (unit->equipped_slots.left_hand == -1)
             return SLOT_IS_NOT_USED;
 
-        unit->equipped_slots.left_hand = NULL;
+        unit->equipped_slots.left_hand = -1;
         _unapply_effect(unit, item->effects);
         return OK;
         break;
 
     case LEGS:
-        if (unit->equipped_slots.legs == NULL)
+        if (unit->equipped_slots.legs == -1)
             return SLOT_IS_NOT_USED;
 
-        unit->equipped_slots.legs = NULL;
+        unit->equipped_slots.legs = -1;
         _unapply_effect(unit, item->effects);
         return OK;
         break;
@@ -470,43 +470,43 @@ ExceptionStatus unequip(Unit *unit, ItemType item_type)
 ExceptionStatus is_equipped(Unit *unit, int item_index, bool *is_equipped)
 {
     Item *item;
-
     item = get_item_by_index(unit, item_index);
+
     if (item == NULL)
         return INVALID_ITEM_INDEX;
 
     switch (item->type)
     {
     case HEAD:
-        if (unit->equipped_slots.head == item)
+        if (unit->equipped_slots.head == item_index)
             *is_equipped = true;
         else
             *is_equipped = false;
         return OK;
 
     case BODY:
-        if (unit->equipped_slots.body == item)
+        if (unit->equipped_slots.body == item_index)
                 *is_equipped = true;
             else
                 *is_equipped = false;
             return OK;
 
     case RIGHT_HAND:
-        if (unit->equipped_slots.right_hand == item)
+        if (unit->equipped_slots.right_hand == item_index)
                 *is_equipped = true;
             else
                 *is_equipped = false;
             return OK;
 
     case LEFT_HAND:
-        if (unit->equipped_slots.left_hand == item)
+        if (unit->equipped_slots.left_hand == item_index)
                 *is_equipped = true;
             else
                 *is_equipped = false;
             return OK;
 
     case LEGS:
-        if (unit->equipped_slots.legs == item)
+        if (unit->equipped_slots.legs == item_index)
                 *is_equipped = true;
             else
                 *is_equipped = false;
