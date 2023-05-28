@@ -32,6 +32,12 @@ int main()
     int game_is_finished = false;
     do
     {
+        if (game_map.units_list[PLAYER_INDEX].hp <= 0)
+        {
+            game_is_finished = true;
+            break;
+        }
+
         if (game_mode == 'g')
         {
             selected_item_index = 0;
@@ -79,7 +85,11 @@ int main()
             };
             case 'u':
             {
-                use(game_map.units_list + PLAYER_INDEX, selected_item_index);
+                int exit_code;
+                exit_code = use(game_map.units_list + PLAYER_INDEX, selected_item_index);
+                printw("%d\n", exit_code);
+                if (selected_item_index > 0 && exit_code != NOT_CONSUMABLE)
+                    --selected_item_index;
                 break;
             };
             default:
@@ -128,6 +138,17 @@ int main()
         }
     }
     while (!game_is_finished);
+
+    if (game_map.units_list[PLAYER_INDEX].hp <= 0)
+    {
+        print_death_screen();
+        getch();
+    }
+    else
+    {
+        print_win_screen();
+        getch();
+    }
 
     err_code = delete_map(&game_map);
 };
