@@ -2,6 +2,8 @@
 #include <ncurses.h>
 
 void init_ncurses();
+void print_death_screen();
+void print_win_screen();
 void print_inventory(GameMap *game_map, int selected_item_index);
 void print_map(GameMap *game_map);
 
@@ -21,5 +23,9 @@ typedef enum
     SHOW_HP_PAIR,
     SHOW_DMG_PAIR,
     SHOW_NAME_PAIR,
-    SHOW_DEFENSE_PAIR
+    SHOW_DEFENSE_PAIR,
+    DEATH_SCREEN_PAIR,
+    WIN_SCREEN_PAIR,
+    EQUIPPED_PAIR,
+    SCROLL_PAIR
 } ColorPair;
