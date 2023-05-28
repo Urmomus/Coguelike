@@ -22,7 +22,7 @@ LandsapeSettings;
 
 // константы да переменные
 
-int PLAYER_INDEX = 0;							// индекс, под которым в массиве units_list расположен игрок. 
+int PLAYER_INDEX = -1;							// индекс, под которым в массиве units_list расположен игрок. 
 const int MAX_LEVEL = 10;
 LandsapeSettings _std_settings = {30, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
@@ -299,6 +299,7 @@ int delete_map(GameMap *game_map)
 */
 int init_map(GameMap *game_map, MapSettings settings)
 {
+
 	// проверка 2: проверяем, что нам не навалили нулевых указателей
 	if (game_map == NULL)
 		return EMPTY_POINTER;
@@ -1351,6 +1352,12 @@ void _copy_unit(Unit *orig, Unit *new_unit)
 	new_unit -> name = orig -> name;
 	new_unit -> unit_type = orig -> unit_type;
 	new_unit -> inventory = orig -> inventory;
+
+	// предметы копируем с перевыделением памяти
+	new_unit -> inventory.items = malloc(sizeof(Item) * orig -> inventory.current_size);
+	for (int i = 0; i < orig -> inventory.current_size; ++i)
+		new_unit -> inventory.items[i] = orig -> inventory.items[i];
+
 	new_unit -> equipped_slots = orig -> equipped_slots;
 
 	//for (int i = 0; i < orig -> inventory.current_size; ++i)

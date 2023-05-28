@@ -586,10 +586,10 @@ int _test_generate_map_landscape(char **message)
         *message = GENERATE_MAPS_LANDSCAPE_CANT_GENERATE_LANDSCAPE;
         return 1;
     };
+    
 
     // чистим память
     delete_map(&game_map);  // эта функция уже оттещена
-
     // теперь мы делаем что: мы создаём разные конфигурации карты и смотрим:
     for (int seed = 0; seed <= 15; ++seed)
     {
@@ -769,8 +769,10 @@ int _test_delete_map(char **message)
     map_1.items_list = NULL;
     
     // проверяем, что карта не инициализировалась (что есть, что удалять)
+
     if (delete_map(&map_1) != MAP_ALREADY_DELETED)
     {
+        
         *message = DELETE_MAP_DELETED_NON_INITIALIZED_MAP;
         return 1;
     };
