@@ -2,7 +2,8 @@
 #include "ErrorCodes.h"
 #include <time.h>
 #include <stdlib.h>
-#include <stdio.h> // стереть
+#include <stdio.h> 
+#include <string.h>
 #include <math.h>
 
 // если имя функции начинается с нижнего подчёркивания, то она исключительно внутрифайловая,
@@ -158,6 +159,14 @@ int _unit_on_map(GameMap *game_map, Unit *unit);
  * @return код ошибки
 */
 int _next_level(GameMap *game_map);
+
+/*********
+ * @brief создаёт копию юнита 
+ * @param orig оригинал юнита
+ * @param new_unit куда копировать
+ * @return копия юнита
+*/
+void _copy_unit(Unit *orig, Unit *new_unit);
 
 // реализации функций
 
@@ -1253,17 +1262,32 @@ int _unit_on_map(GameMap *game_map, Unit *unit)
 */
 int _next_level(GameMap *game_map)
 {
+	//freopen("log.txt", "w", stdout);
+
 	MapSettings next_level_settings;
 	next_level_settings.size_x = game_map -> size_x;
 	next_level_settings.size_y = game_map -> size_y;
 	next_level_settings.level = game_map -> level + 1;	// след. уровень
-	
-	delete_map(game_map);	// стираем карту
+
+	printf("LOG OPENED\n");
 
 	// и заново всё пересчитываем для следующего уровня
+	
+	// сохраняем игрока во временную переменную
+	Unit tmp_player;	tmp_player.name = NULL;
+	_copy_unit(game_map -> units_list + PLAYER_INDEX, &tmp_player); 
+
+	delete_map(game_map);	// стираем карту
+
+	// и создаём новый уровень
 	init_map(game_map, next_level_settings);
 	generate_maps_landscape(game_map);
 	generate_maps_content(game_map);
+
+	// загружаем игрока из временной переменной
+	_copy_unit(&tmp_player, game_map -> units_list + PLAYER_INDEX);
+
+	//fclose(stdout);
 };
 
 /**
@@ -1297,4 +1321,29 @@ int game_is_finished(GameMap *game_map, char *is_finished)
 		*is_finished = 1;
 
 	return OK;
+};
+
+/*********
+ * @brief создаёт копию юнита 
+ * @param orig оригинал юнита
+ * @param new_unit куда копировать
+ * @return копия юнита
+*/
+void _copy_unit(Unit *orig, Unit *new_unit)
+{
+	
+	// координаты мы ни в коем случае не копируем: они никак не зависят от того, где юнит закончил пред. уровенЬ!!
+	//new_unit -> x = orig -> x;
+	//new_unit -> y = orig -> y;
+	
+	new_unit -> miss_chance = orig -> miss_chance;
+	new_unit -> lvl = orig -> lvl;
+	new_unit -> kills = orig -> kills;
+	new_unit -> hp = orig -> hp;
+	new_unit -> dmg = orig -> dmg;
+	new_unit -> defense = orig -> defense;
+	new_unit -> name = orig -> name;
+	new_unit -> unit_type = orig -> unit_type;
+	new_unit -> inventory = orig -> inventory;
+	new_unit -> equipped_slots = orig -> equipped_slots;
 };

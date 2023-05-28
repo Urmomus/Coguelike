@@ -214,7 +214,7 @@ ExceptionStatus generate_monsters(Unit *monsters, int size, int level)
     return OK;
 }
 
-ExceptionStatus generate_player(Unit *player, char *player_name)
+ExceptionStatus generate_player(Unit *player, char* player_name)
 {
     Item items[256] = {0};
     Inventory inventory = {items, 0, 256};
