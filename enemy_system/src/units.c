@@ -288,8 +288,21 @@ ExceptionStatus use(Unit *unit, int item_index)
 
 ExceptionStatus add_to_inventory(Unit *unit, Item item)
 {
+    if (item.type == CONSUMABLE || unit->inventory.current_size == 0)
+        unit->inventory.items[unit->inventory.current_size] = item;
+    else
+    {
+        int i = unit->inventory.current_size;
+        while (unit->inventory.items[i - 1].type == CONSUMABLE && i > 0)
+        {
+            unit->inventory.items[i] = unit->inventory.items[i - 1];
+            --i;
+        }
+        unit->inventory.items[i] = item;
+    }
+
     unit->inventory.current_size += 1;
-    unit->inventory.items[unit->inventory.current_size - 1] = item;
+
     return OK;
 }
 
