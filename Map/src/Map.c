@@ -1274,7 +1274,7 @@ int _next_level(GameMap *game_map)
 	// и заново всё пересчитываем для следующего уровня
 	
 	// сохраняем игрока во временную переменную
-	Unit tmp_player;	tmp_player.name = NULL;
+	Unit tmp_player;
 	_copy_unit(game_map -> units_list + PLAYER_INDEX, &tmp_player); 
 
 	delete_map(game_map);	// стираем карту
@@ -1287,6 +1287,12 @@ int _next_level(GameMap *game_map)
 	// загружаем игрока из временной переменной
 	_copy_unit(&tmp_player, game_map -> units_list + PLAYER_INDEX);
 
+	for (int i = 0; i < game_map -> units_list[PLAYER_INDEX].inventory.current_size; ++i)
+	{
+		Item tmp = game_map -> units_list[PLAYER_INDEX].inventory.items[i];
+		printf("#%d: %s, %d, %d\n", i, tmp.name, tmp.type, tmp.uses);
+	};
+	scanf("%d", &next_level_settings.size_x);
 	//fclose(stdout);
 };
 
@@ -1346,4 +1352,11 @@ void _copy_unit(Unit *orig, Unit *new_unit)
 	new_unit -> unit_type = orig -> unit_type;
 	new_unit -> inventory = orig -> inventory;
 	new_unit -> equipped_slots = orig -> equipped_slots;
+
+	//for (int i = 0; i < orig -> inventory.current_size; ++i)
+	//{
+	//	new_unit -> inventory.items[i].name = malloc(sizeof(char) * strlen(orig -> inventory.items[i].name));
+	//	//strcpy(new_unit -> inventory.items[i].name, orig -> inventory.items[i].name);
+	//};
+
 };
