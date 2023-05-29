@@ -330,9 +330,9 @@ void show_menu(int selected)
 
 "               '----`                            ");
 
-    char *fields[] = {"start game", "show_leaderboard"};
+    char *fields[] = {"start game", "show_leaderboard", "exit"};
 
-    for (int i = 0; i < 2; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         if (selected == i)
         {
@@ -353,7 +353,7 @@ void print_leaderboard()
     TableOfLeaders table;
     load_table_from_file(&table, FILENAME);
 
-    for (int i = 0; i < fmin(table.num_of_leaders, SIZE); ++i)
+    for (int i = table.num_of_leaders - 1; i > fmax(0, table.num_of_leaders - 1 - SIZE); --i)
     {
         attron(COLOR_PAIR(SHOW_NAME_PAIR));
         printw("%s\n", table.data[i].name);
@@ -368,5 +368,4 @@ void save_to_leaderboard(Unit *player)
     load_table_from_file(&table, FILENAME);
     add_player_to_table(&table, player);
     save_table_to_file(&table, FILENAME);
-
 }

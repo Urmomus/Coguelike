@@ -11,6 +11,8 @@ int main()
 {
     char menu_mode = ' ';
 
+    start_game:
+
     menu_logic(&menu_mode);
 
     if (menu_mode == 'g')
@@ -184,11 +186,19 @@ int main()
         }
 
         err_code = delete_map(&game_map);
+
+        goto start_game;
     }
     else if (menu_mode == 'l')
     {
         print_leaderboard();
         getch();
+        goto start_game;
+    }
+    else if (menu_mode == 'e')
+    {
+        clear();
+        return 0;
     }
 };
 
@@ -217,14 +227,31 @@ void menu_logic(char *menu_mode)
         }
         case 's':
         {
-            if (selected_menu_index < 1)
+            if (selected_menu_index < 2)
                 ++selected_menu_index;
             show_menu(selected_menu_index);
             break;
         }
         default:
         {
-            *menu_mode = selected_menu_index == 0 ? 'g' : 'l';
+            switch (selected_menu_index)
+            {
+                case 0:
+                {
+                    *menu_mode = 'g';
+                    break;
+                }
+                case 1:
+                {
+                    *menu_mode = 'l';
+                    break;
+                }
+                case 2:
+                {
+                    *menu_mode = 'e';
+                    break;
+                }
+            }
         }
         }
     }
