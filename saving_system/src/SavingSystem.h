@@ -10,34 +10,34 @@
  * @param level уровень чемпиона
  * @param items_num кол-во вещей, подобранных чемпионом
 */
-typedef struct 
+typedef struct
 {
 	char *name;
 	int kills;
 	int level;
 	int items_num;
 }
-Lider;
+Leader;
 
 /******
  * @brief структура статистики всех сохранённых чемпионов
  * @param data список чемпионов
- * @param num_of_liders кол-во чемпионов
+ * @param num_of_leaders кол-во чемпионов
 */
 typedef struct
 {
-	Lider *data;
-	int num_of_liders;
+	Leader *data;
+	int num_of_leaders;
 }
-TableOfLiders;
+TableOfLeaders;
 
 /****
- * @brief сохраняет таблицу лидеров в файл 
+ * @brief сохраняет таблицу лидеров в файл
  * @param table таблица лидеров
  * @param filename название файла
  * @return код ошибки
 */
-int save_table_to_file(TableOfLiders *table, char *filename);
+int save_table_to_file(TableOfLeaders *table, char *filename);
 
 /*****
  * @brief загружает таблицу лидеров из файла
@@ -45,7 +45,7 @@ int save_table_to_file(TableOfLiders *table, char *filename);
  * @param filename название файла
  * @return код ошибки
 */
-int load_table_from_file(TableOfLiders *table, char *filename);
+int load_table_from_file(TableOfLeaders *table, char *filename);
 
 /******
  * @brief добавляет игрока во статистику
@@ -53,13 +53,13 @@ int load_table_from_file(TableOfLiders *table, char *filename);
  * @param unit игрок
  * @return код ошибки
 */
-int add_player_to_table(TableOfLiders *table, Unit *player);
+int add_player_to_table(TableOfLeaders *table, Unit *player);
 
 /*****
  * @brief очищает память из-под таблицы лидеров
  * @param table таблица лидеров
  * @return код ошибки
 */
-int delete_table(TableOfLiders *table);
+int delete_table(TableOfLeaders *table);
 
 #endif
