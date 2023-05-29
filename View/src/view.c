@@ -353,7 +353,7 @@ void print_leaderboard()
     TableOfLeaders table;
     load_table_from_file(&table, FILENAME);
 
-    for (int i = table.num_of_leaders - 1; i > fmax(0, table.num_of_leaders - 1 - SIZE); --i)
+    for (int i = 0; i < table.num_of_leaders; ++i)
     {
         attron(COLOR_PAIR(SHOW_NAME_PAIR));
         printw("%s\n", table.data[i].name);
