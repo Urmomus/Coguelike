@@ -114,11 +114,11 @@ int _test_move_monsters(char **message)
             game_map.data[y][x].type = FREE_CELL;   // стираем все стены
             game_map.data[y][x].unit = NULL;   // нет мобов
             game_map.data[y][x].item = NULL;   // и нет предметов
-        
+
         };
 
     // создаём игрока и мобов
-    generate_maps_content(&game_map);   // функция уже оттещена
+    generate_maps_content(&game_map, "chmo");   // функция уже оттещена
 
     // сохраняем координаты моба
     int ox = game_map.units_list[1].x;
@@ -155,7 +155,7 @@ int _test_move_monsters(char **message)
     // теперь убиваем всех монстров
     for (int i = 0; i < game_map.units_num; ++i)
         game_map.units_list[i].x = game_map.units_list[i].y = -1;
-    
+
     // и смотрим, что функция всё равно отработает корректно
     if (move_monsters(&game_map) != OK)
     {
@@ -175,7 +175,7 @@ int _test_move_monsters(char **message)
     delete_map(&game_map);  // функция уже оттещена
 
     return 0;
-};         
+};
 
 /***********
 /* @brief тест на функцию game_is_finished
@@ -222,11 +222,11 @@ int _test_game_is_finished(char **message)
             game_map.data[y][x].type = FREE_CELL;   // стираем все стены
             game_map.data[y][x].unit = NULL;   // нет мобов
             game_map.data[y][x].item = NULL;   // и нет предметов
-        
+
         };
 
     // создаём игрока и мобов
-    generate_maps_content(&game_map);   // функция уже оттещена
+    generate_maps_content(&game_map, "chmo");   // функция уже оттещена
 
     // а здесь уже, на инициализированной карте и с выставленным игроком, ф-я должна отработать корректно
     if (game_is_finished(&game_map, &is_finished) != OK)
@@ -261,7 +261,7 @@ int _test_game_is_finished(char **message)
     };
 
     game_map.level = 1;
-    
+
     // теперь нам надо выйти по причине, что игрок откинулся
     game_map.units_list[PLAYER_INDEX].x = -1;
     game_map.units_list[PLAYER_INDEX].y = -1;
@@ -305,7 +305,7 @@ int _test_move_player(char **message)
     game_map.units_list = NULL;
     game_map.items_list = NULL;
     game_map.data = NULL;
-    
+
     // проверяем, что ф-я корректно обрабатывает неинициализированную карту на входе
     if (move_player(&game_map, 5) != MAP_ALREADY_DELETED)
     {
@@ -324,10 +324,10 @@ int _test_move_player(char **message)
             game_map.data[y][x].type = FREE_CELL;   // стираем все стены
             game_map.data[y][x].unit = NULL;   // нет мобов
             game_map.data[y][x].item = NULL;   // и нет предметов
-        
+
         };
 
-    generate_maps_content(&game_map);   // эта ф-я уже оттещена
+    generate_maps_content(&game_map, "chmo");   // эта ф-я уже оттещена
 
     // проверяем, что игрок не станет ходить в непонятных направлениях
     if (move_player(&game_map, 5) != INVALID_DIRECTION)
@@ -335,7 +335,7 @@ int _test_move_player(char **message)
         *message = MOVE_PLAYER_WORKED_FOR_INVALID_DIRECTION;
         return 1;
     };
-    
+
     // игрок совершает круг и один ход стоит
     int dirs[5] = {'d', 'r', 'u', 'l', 's'};
     for (int i = 0; i < 5; ++i)
@@ -344,7 +344,7 @@ int _test_move_player(char **message)
             *message = MOVE_PLAYER_DOESNT_WORK;
             return 1;
         };
-    
+
     // получаем координаты игрока
     int x = game_map.units_list[PLAYER_INDEX].x;
     int y = game_map.units_list[PLAYER_INDEX].y;
@@ -365,7 +365,7 @@ int _test_move_player(char **message)
     {
         move_player(&game_map, 'r');
     };
-    
+
     // проверяем, что игрок не ушёл в край карты, а словил ошибку
     if (move_player(&game_map, 'r') != MOVE_IS_IMPOSSIBLE)
     {
@@ -392,10 +392,10 @@ int _test_move_player(char **message)
         *message = MOVE_PLAYER_ATTACK_ISNT_WORK;
         return 1;
     };
-    
+
     // убиваем игрока
     game_map.units_list[PLAYER_INDEX].x = game_map.units_list[PLAYER_INDEX].y = -1;
-    
+
     if (move_player(&game_map, 'l') != UNIT_IS_DIED)
     {
         *message = MOVE_PLAYER_CAN_MOVE_DIED_PLAYER;
@@ -416,7 +416,7 @@ int _test_move_player(char **message)
 int _test_generate_map_content(char **message)
 {
     // проверяем, что нулевые указатели отлавливаются
-    if (generate_maps_content(NULL) != EMPTY_POINTER)
+    if (generate_maps_content(NULL, "chmo") != EMPTY_POINTER)
     {
         *message = GENERATE_MAP_CONTENT_ERROR_WITH_NULL_PTR;
         return 1;
@@ -428,7 +428,7 @@ int _test_generate_map_content(char **message)
     game_map.units_list = NULL;
 
     // проверяем, что неинициализированная карта отлавливается
-    if (generate_maps_content(&game_map) != MAP_ALREADY_DELETED)
+    if (generate_maps_content(&game_map, "chmo") != MAP_ALREADY_DELETED)
     {
         *message = GENERATE_MAP_CONTENT_WORKED_FOR_NON_INITIALIZED_MAP;
         return 1;
@@ -451,7 +451,7 @@ int _test_generate_map_content(char **message)
             int err = init_map(&game_map, settings);  // функция уже оттещена
             err = generate_maps_landscape(&game_map); // функция уже оттещена
 
-            if (generate_maps_content(&game_map) != OK)
+            if (generate_maps_content(&game_map, "chmo") != OK)
             {
                 *message = GENERATE_MAP_CONTENT_CANT_CREATE_CONTENT;
                 return 1;
@@ -480,7 +480,7 @@ int _test_generate_map_content(char **message)
             // не забываем очистить память
             delete_map(&game_map);  // функция уже оттещена
         };
-    
+
 
     return 0;
 };
@@ -490,7 +490,7 @@ int _test_generate_map_content(char **message)
  * @param game_map карта
  * @param used массив "посещено / не посещено"
  * @param x координата по х
- * @param y координата по y 
+ * @param y координата по y
 */
 void _dfs_(GameMap *game_map, char **used, int x, int y)
 {
@@ -517,7 +517,7 @@ int cnt_places(GameMap *game_map)
     char **used = malloc(sizeof(char*) * game_map -> size_y);
     // чистим used'ы
     for (int y = 0; y < game_map -> size_y; ++y)
-    {    
+    {
         used[y] = malloc(sizeof(char) * game_map -> size_x);
         for (int x = 0; x < game_map -> size_x; ++x)
         {
@@ -545,7 +545,7 @@ int cnt_places(GameMap *game_map)
     for (int y = 0; y < game_map -> size_y; ++y)
         free(used[y]);
     free(used);
-    
+
     return zones_cnt;
 };
 
@@ -586,7 +586,7 @@ int _test_generate_map_landscape(char **message)
         *message = GENERATE_MAPS_LANDSCAPE_CANT_GENERATE_LANDSCAPE;
         return 1;
     };
-    
+
 
     // чистим память
     delete_map(&game_map);  // эта функция уже оттещена
@@ -634,7 +634,7 @@ int _test_generate_map_landscape(char **message)
 int _test_init_map(char **message)
 {
     MapSettings map_1_settings;
- 
+
      // проверяем, что если передать в init_map передать NULL, то произойдёт ошибка
     if (init_map(NULL, map_1_settings) != EMPTY_POINTER)
     {
@@ -713,7 +713,7 @@ int _test_init_map(char **message)
 
     // теперь проверяем, что карта действительно создаётся
     map_1_settings.level = 5;   // корректный уровень
-    
+
     // проверяем, что в случае корректных настроек карта создаётся
     if (init_map(&map_1, map_1_settings) != OK)
     {
@@ -763,16 +763,16 @@ int _test_delete_map(char **message)
 
     MapSettings map_1_settings;
     GameMap map_1;
-    
+
     map_1.data = NULL;  // моделируем ситуацию, что карту ещё не инициализировали
     map_1.units_list = NULL;
     map_1.items_list = NULL;
-    
+
     // проверяем, что карта не инициализировалась (что есть, что удалять)
 
     if (delete_map(&map_1) != MAP_ALREADY_DELETED)
     {
-        
+
         *message = DELETE_MAP_DELETED_NON_INITIALIZED_MAP;
         return 1;
     };
@@ -783,14 +783,14 @@ int _test_delete_map(char **message)
     map_1_settings.level = 5;
 
     init_map(&map_1, map_1_settings);   // имеем право использовать ф-ю, т.к. она уже оттестирована
-    
+
     // проверяем, что ф-я работает в корректных ситуациях
     if (delete_map(&map_1) != OK)
     {
         *message = DELETE_MAP_CANT_DELETE;
         return 1;
     };
-    
+
     // проверяем, что функция, ежели вернула ОК, действительно всё подчистила
     if (map_1.data != NULL || map_1.units_list != NULL || map_1.items_list != NULL)
     {
@@ -824,7 +824,7 @@ int test_Map()
         printf("%s", message);
         return 1;
     };
-    
+
     if(_test_generate_map_content(&message) == 1)   // 4 / 8
     {
         printf("%s", message);
