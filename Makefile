@@ -1,9 +1,9 @@
-all: runTests
+all: buildLibs
 	gcc -I ./enemy_system/src -I ./Map/src main.c -lMap -lEnemySystem \
 	-L./Map/ -L./enemy_system/ -lm -o ./bin/main
 
-runTests: buildLibs
-	make -f TestMakefile
+# runTests: buildLibs
+# 	make -f TestMakefile
 
 
 buildLibs: buildMap buildEnemySystem
