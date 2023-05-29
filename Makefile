@@ -6,10 +6,13 @@ all: buildLibs
 # 	make -f TestMakefile
 
 
-buildLibs: buildMap buildEnemySystem
+buildLibs: buildMap buildEnemySystem buildSaves
 
 buildMap:
 	make -C ./Map/
 
 buildEnemySystem:
 	make -C ./enemy_system/
+
+buildSaves:
+	make -C ./saving_system/

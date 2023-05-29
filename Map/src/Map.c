@@ -1275,7 +1275,7 @@ int _next_level(GameMap *game_map)
 	next_level_settings.size_y = game_map -> size_y;
 	next_level_settings.level = game_map -> level + 1;	// след. уровень
 
-	printf("LOG OPENED\n");
+	//printf("LOG OPENED\n");
 
 	// и заново всё пересчитываем для следующего уровня
 

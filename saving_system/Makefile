@@ -1,5 +1,5 @@
-empty: emptyAr
-	touch ./obj/empty.o
+LIB: OBJ
+	ar r libSavingSystem.a ./obj/SavingSystem.o
 
-emptyAr:
-	ar r libSavingSystem.a
+OBJ:
+	gcc -c ./src/SavingSystem.c -I../enemy_system/src/ -o ./obj/SavingSystem.o
