@@ -2,7 +2,7 @@
 #include "ErrorCodes.h"
 #include <time.h>
 #include <stdlib.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 
@@ -16,13 +16,13 @@ typedef struct
 	int death_limit; 		// рекомендую задавать в 3
 	int birth_limit; 		// рекомендую задавать в 4
 	int steps;				// сколько раз карта будет обновлять своё состояние (обычно хватает 2-5 раз)
-} 
-LandsapeSettings;	
+}
+LandsapeSettings;
 
 
 // константы да переменные
 
-int PLAYER_INDEX = -1;							// индекс, под которым в массиве units_list расположен игрок. 
+int PLAYER_INDEX = -1;							// индекс, под которым в массиве units_list расположен игрок.
 const int MAX_LEVEL = 10;
 LandsapeSettings _std_settings = {30, 3, 4, 5};		// дефолтные настройки для генерации ландшафта карты
 
@@ -52,11 +52,11 @@ TODO: написать заголовок
 int _copy_map(GameMap *from, GameMap *to);
 
 /**
- * @brief переводит карту в следующее состояние 
+ * @brief переводит карту в следующее состояние
  * @param game_map указатель на карту
  * @param death_limit передать то, что поступило в generate_maps_landscape
  * @param birth_limit передать то, что поступило в generate_maps_landscape
- * @return код ошибки 
+ * @return код ошибки
  */
 int _next_state(GameMap *game_map);
 
@@ -103,20 +103,20 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type);
 int _move_unit(GameMap *game_map, int ind, char dir);
 
 /******
-	@brief отвязывает юнита от клетки на карте 
+	@brief отвязывает юнита от клетки на карте
 	@param game_map карта, где происходит действие
 	@param ind индекс юнита в массиве units_list
-	@return код ошибки	
+	@return код ошибки
 */
 int _unbind_unit_from_cell(GameMap *game_map, int ind);
 
 /******
-	@brief привязывает юнита к клетке на карте 
+	@brief привязывает юнита к клетке на карте
 	@param game_map карта, где происходит действие
 	@param ind индекс юнита в массиве units_list
 	@param x координата по х клетки, к которой надо привязать юнита
 	@param y координата по y клетки, к которой надо привязать юнита
-	@return код ошибки	
+	@return код ошибки
 */
 int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y);
 
@@ -161,7 +161,7 @@ int _unit_on_map(GameMap *game_map, Unit *unit);
 int _next_level(GameMap *game_map);
 
 /*********
- * @brief создаёт копию юнита 
+ * @brief создаёт копию юнита
  * @param orig оригинал юнита
  * @param new_unit куда копировать
  * @return копия юнита
@@ -184,7 +184,7 @@ char _coords_are_correct(GameMap *game_map, int x, int y)
 		return 0;
 	if (y < 0 || y >= game_map -> size_y)
 		return 0;
-	
+
 	return 1;
 };
 
@@ -198,26 +198,26 @@ char _coords_are_correct(GameMap *game_map, int x, int y)
 int _cnt_neighbours(GameMap *game_map, int x, int y, int *result)
 {
     *result = 0;
-    
+
     for (int i = -1; i <= 1; ++i)
 		for (int j = -1; j <= 1; ++j)
 		{
 		    int neigbour_x = x + j;
             int neigbour_y = y + i;
-            
+
             if (neigbour_x == x && neigbour_y == y)
             {
                 //саму клетку не считаем!
                 continue;
             };
-            
+
             if(!_coords_are_correct(game_map, neigbour_x, neigbour_y))
 			{
                 // если сосед -- край карты, то засчитываем
                 *result += 1;
                 continue;
             };
-            
+
             if (game_map -> data[neigbour_y][neigbour_x].type == WALL_CELL)
             {
                 // если сосед -- стенка, то засчитываем
@@ -234,21 +234,21 @@ int _copy_map(GameMap *from, GameMap *to)
 {
 	if ((from -> size_x != to -> size_x) || (from -> size_y != to -> size_y))
 		return SIZE_ERROR;
-	
+
 	if ((from -> items_num != to -> items_num) || (from -> units_num != from -> units_num))
 		return MONSTER_OR_ITEMS_LEN_ERROR;
 
 	for (int i = 0; i < from -> size_y; ++i)
 		for (int j = 0; j < from -> size_x; ++j)
 			to -> data[i][j] = from -> data[i][j];
-	
+
 	// не забываем скопировать уровень
 	to -> level = from -> level;
 
 	// не забываем скопировать предметы
 	for (int i = 0; i < from -> items_num; ++i)
 		to -> items_list[i] = from -> items_list[i];
-	
+
 	// не забываем скопировать мобов
 	for (int i = 0; i < from -> units_num; ++i)
 		to -> units_list[i] = from -> units_list[i];
@@ -262,7 +262,7 @@ int _copy_map(GameMap *from, GameMap *to)
 	@return код ошибки
 */
 int delete_map(GameMap *game_map)
-{	
+{
 	// проверка 0: проверяем, что не навалили нулевых указателей
 	if (game_map == NULL)
 		return EMPTY_POINTER;
@@ -275,14 +275,14 @@ int delete_map(GameMap *game_map)
 	for (int i = 0; i < game_map -> size_y; ++i)
 		free(game_map -> data[i]);
 	free(game_map -> data);
-	
-	
-	// потом чистим память, выделенную под предметы 
+
+
+	// потом чистим память, выделенную под предметы
 	free(game_map -> items_list);
-	
+
 	// и мобов
 	free(game_map -> units_list);
-	
+
 	// и зануляем все указатели, чтобы показать, что карта очищена
 	game_map -> data = NULL;
 	game_map -> units_list = NULL;
@@ -295,7 +295,7 @@ int delete_map(GameMap *game_map)
 	@brief инициализирует карту начальными значениями
 	@param game_map карта
 	@param settings настройки, из которых возьмутся начальные значения
-	@return код ошибки  
+	@return код ошибки
 */
 int init_map(GameMap *game_map, MapSettings settings)
 {
@@ -322,7 +322,7 @@ int init_map(GameMap *game_map, MapSettings settings)
 	// и уровень
 	game_map -> level = settings.level;
 
-	
+
 	// работаем с монстрами и предметами
 	const int MONSTER_COEFF = 2; 	// кол-во монстров уровне = уровень * MONSTER_COEFF + 2 + 1(игрок).
 	const int ITEM_COEFF = 3;		// кол-во предметов на уровне = уровень * ITEM_COEFF + 5
@@ -333,10 +333,10 @@ int init_map(GameMap *game_map, MapSettings settings)
 
 	// выделяем память под предметы
 	game_map -> items_list = malloc(sizeof(Item) * game_map -> items_num);
-	
+
 	// выделяем память под юнитов
 	game_map -> units_list = malloc(sizeof(Unit) * game_map -> units_num);
-	
+
 	// изначально ни один из юнитов нигде не стоит
 	for (int i = 0; i < game_map -> units_num; ++i)
 	{
@@ -347,21 +347,21 @@ int init_map(GameMap *game_map, MapSettings settings)
 	game_map -> data = malloc(sizeof(Cell*) * game_map -> size_y);
 	for (int y = 0; y < game_map -> size_y; ++y)
 		game_map -> data[y] = malloc(sizeof(Cell) * game_map -> size_x);
-	
+
 	return OK;
 };
 
 /**
- * @brief переводит карту в следующее состояние 
+ * @brief переводит карту в следующее состояние
  * @param game_map указатель на карту
  * @param death_limit передать то, что поступило в generate_maps_landscape
  * @param birth_limit передать то, что поступило в generate_maps_landscape
- * @return код ошибки 
+ * @return код ошибки
  */
 int _next_state(GameMap *game_map)
-{    
+{
 	GameMap tmp;
-	
+
 	tmp.units_list = NULL; tmp.items_list = NULL; tmp.data = NULL;
 
 	MapSettings tmp_settings;
@@ -374,12 +374,12 @@ int _next_state(GameMap *game_map)
 	int err_code = init_map(&tmp, tmp_settings);
 	if(err_code)
 		return err_code;
-	
+
 	err_code = _copy_map(game_map, &tmp);
 	if(err_code)
 		return err_code;
 
-	
+
     for (int x = 0; x < game_map -> size_x; ++x)
 		for (int y = 0; y < game_map -> size_y; ++y)
 		{
@@ -388,7 +388,7 @@ int _next_state(GameMap *game_map)
             if(game_map -> data[y][x].type == WALL_CELL)
             {
                 if (neighbours < _std_settings.death_limit)
-				{	
+				{
                     tmp.data[y][x].type = FREE_CELL;
                 }
                 else
@@ -408,7 +408,7 @@ int _next_state(GameMap *game_map)
 				};
 			};
          };
-         
+
     _copy_map(&tmp, game_map);
     delete_map(&tmp);
 	return OK;
@@ -430,7 +430,7 @@ void _dfs(GameMap *game_map, char **used, int x, int y, int size_x, int size_y, 
 
 	if (!_coords_are_correct(game_map, x, y))	// вышли за пределы карты
 		return;
-	
+
 	if (game_map -> data[y][x].type == WALL_CELL)	// попали в стену
 		return;
 	if (used[y][x] != 0) 		// эта клетка уже посчитана
@@ -456,14 +456,14 @@ int generate_maps_landscape(GameMap *game_map)
 		return EMPTY_POINTER;
 	// проверяем, что на вход пришла инициализированная карта
 	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
-		return MAP_ALREADY_DELETED;	
+		return MAP_ALREADY_DELETED;
 	for (int y = 0; y < game_map -> size_y; ++y)
 		for (int x = 0; x < game_map -> size_x; ++x)
 		{
 			int random_value = rand() % (100+1); // приводим к промежутку [0; 100] -- к процентам
 			game_map -> data[y][x].type = (random_value <= _std_settings.chance);
 			game_map -> data[y][x].unit = NULL; // на этом этапе на клетках нет ничего и никого
-			game_map -> data[y][x].item = NULL;	
+			game_map -> data[y][x].item = NULL;
 		};
 
 	for (int i = 0; i < _std_settings.steps; ++i)
@@ -499,7 +499,7 @@ int generate_maps_landscape(GameMap *game_map)
 			// рассматриваем только клетки, по которым можно ходить
 			if (game_map -> data[y][x].type == WALL_CELL)
 				continue;
-			
+
 			int size_of_island = 0;
 			//  ind -- это порядковый номер клетки, и он всегда уникален
 			int ind = y * game_map -> size_x + x;
@@ -531,11 +531,11 @@ int generate_maps_landscape(GameMap *game_map)
 	for (int y = 0; y < game_map -> size_y; ++y)
 		for (int x = 0; x < game_map -> size_x; ++x)
 			num_of_free_cells += (game_map -> data[y][x].type == FREE_CELL);
-	
+
 	// генерируем случайное число в пределах [0; num_of_free_cells);
 	int place_for_portal = rand() % num_of_free_cells;	// номер свободной клетки, где стоит портал
 	int now_cell = 0;		// номер текущей свободной клетки
-	
+
 	for (int y = 0; y < game_map -> size_y; ++y)
 		for (int x = 0; x < game_map -> size_x; ++x)
 		{
@@ -576,12 +576,12 @@ void _cnt_boundaries(int blocks_num, int map_size_x, int map_size_y, int *block_
 			continue;
 		a = map_size_x / i;
 		b = map_size_y / (blocks_num / i);
-		
+
 		int diff = abs(a - b);
 		if (diff < min_diff)
 		{
 			*block_size_x = a;
-			*block_size_y = b;	
+			*block_size_y = b;
 		};
 	};
 
@@ -611,7 +611,7 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 	printf("размер блока по у: %d\n", block_size_y);
 	*/
 
-	int blocks_in_line = (game_map -> size_x / block_size_x);		// кол-во блоков в ряду 
+	int blocks_in_line = (game_map -> size_x / block_size_x);		// кол-во блоков в ряду
 	int cells_in_line = block_size_x * blocks_in_line;				// кол-во клеток в оном ряду из блоков
 
 	// перебираем все объекты
@@ -629,14 +629,14 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 		// впритык слева от предыдущего
 		int x_2 = x_1 + block_size_x - 1;	// не забываем вычесть 1, чтобы блоки не накладывались друг на друга
 		int y_2 = y_1 + block_size_y - 1;
-		
+
 		// эхо-печать
 		//printf("блок номер %d\n", i);
 		//printf("%d\t%d\n%d\t%d\n", x_1, y_1, x_2, y_2);
 
 		// идея такая: мы считаем количество клеток suitable_cells_cnt, на которые можно разместить предмет, внутри блока.
 		// потом берём рандомное число ind, меньшее, чем suitable_cells_cnt, и ставим текущий предмет на свободную клетку
-		// блока под номером ind. 
+		// блока под номером ind.
 
 		int suitable_cells_cnt = 0;
 
@@ -647,22 +647,22 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 				// работаем только с открытым пространством и скипаем стены
 				if (game_map -> data[y][x].type == WALL_CELL)
 					continue;
-				
+
 				// работаем только с пустыми клетками (где нет других предметов / юнитов)
 				if (game_map -> data[y][x].unit != NULL || game_map -> data[y][x].item != NULL)
 					continue;
-				
+
 				suitable_cells_cnt += 1;
 			};
 
 		if (suitable_cells_cnt == 0)
 			continue; // TODO: стирать объект из списка предметов
-		
+
 		//printf("В блоке %d суммарно %d клеток, где можно разместить объект.\n", i, suitable_cells_cnt);
 
 		int ind = rand() % suitable_cells_cnt;
 		int now_ind = 0;
-		
+
 		// проходим по блоку
 		for (int y = y_1; y <= y_2; ++y)
 			for (int x = x_1; x <= x_2; ++x)
@@ -670,11 +670,11 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 				// работаем только с открытым пространством и скипаем стены
 				if (game_map -> data[y][x].type == WALL_CELL)
 					continue;
-				
+
 				// работаем только с пустыми клетками (где нет других предметов / юнитов)
 				if (game_map -> data[y][x].unit != NULL || game_map -> data[y][x].item != NULL)
 					continue;
-				
+
 				if (ind == now_ind)
 				{
 					if (type == 'i')
@@ -691,7 +691,7 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
 				++now_ind;
 			};
 	};
-	
+
 };
 
 /**
@@ -699,7 +699,7 @@ void _place_objects_on_map(GameMap *game_map, int objects_num, char type)
  * @param game_map игровая карта (с готовым ландшафтом)
  * @return код ошибки
  */
-int generate_maps_content(GameMap *game_map)
+int generate_maps_content(GameMap *game_map, char *player_name)
 {
 	// проверяем, что нам не навалилил нулевых указателей
 	if (game_map == NULL)
@@ -708,7 +708,7 @@ int generate_maps_content(GameMap *game_map)
 	// проверяем, что карта была инициализирована
 	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
 		return MAP_ALREADY_DELETED;
-	
+
 	// создаём монстров и предметы (списки)
 
 	generate_monsters(game_map -> units_list, game_map -> units_num, game_map -> level);
@@ -725,8 +725,8 @@ int generate_maps_content(GameMap *game_map)
 		PLAYER_INDEX = i;
 		break;
 	}
-	generate_player(game_map -> units_list + PLAYER_INDEX, "Elpatio");
-	
+	generate_player(game_map -> units_list + PLAYER_INDEX, player_name);
+
 	return OK;
 };
 
@@ -738,7 +738,7 @@ int generate_maps_content(GameMap *game_map)
 	@return код ошибки
 */
 int _move_unit(GameMap *game_map, int ind, char dir)
-{	
+{
 	if (!_unit_on_map(game_map, game_map -> units_list + ind))
 		return UNIT_IS_DIED;
 
@@ -768,11 +768,11 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 	// если упёрлись в край карты
 	if (!_coords_are_correct(game_map, x, y))
 		return MOVE_IS_IMPOSSIBLE;
-	
+
 	// если упёрлись в стену
 	if (game_map -> data[y][x].type == WALL_CELL)
 		return MOVE_IS_IMPOSSIBLE;
-	
+
 	// ежели мы упёрлись в иного юнита
 	if (game_map -> data[y][x].unit != NULL)
 	{
@@ -780,6 +780,8 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 			return MOVE_IS_IMPOSSIBLE;
 		// атакуем-с
 		attack(game_map -> units_list + ind, game_map -> data[y][x].unit);
+		if (game_map -> data[y][x].unit->hp <= 0)
+			game_map->units_list[ind].kills += 1;
 		_resresh_is_live(game_map, game_map -> data[y][x].unit);	// проверяем, не умер ли атакуемый
 		return OK;
 	};
@@ -797,7 +799,7 @@ int _move_unit(GameMap *game_map, int ind, char dir)
 		if (ind != PLAYER_INDEX)
 			return OK;
 
-		// поднимаем предмет	
+		// поднимаем предмет
 		add_to_inventory(&game_map -> units_list[ind], *game_map -> data[y][x].item);	// добавляем в инвертарь
 		game_map -> data[y][x].item = NULL;	// отвязываем предмет от клетки
 	};
@@ -817,16 +819,16 @@ int move_player(GameMap *game_map, char dir)
 	// проверяем, что нам не навалили нулевых указателей
 	if (game_map == NULL)
 		return EMPTY_POINTER;
-	
-	// проверяем, что не дали неинициализированную карту 
+
+	// проверяем, что не дали неинициализированную карту
 	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
 		return MAP_ALREADY_DELETED;
-	
+
 	int err_code = _move_unit(game_map, PLAYER_INDEX, dir);
 	if (err_code != NO_ERRORS)
 		return err_code;	// если ошибки -- возвращаем
-	
-	// если же всё прошло без ошибок, то надо проверить одну животрепещущую ситуацию, а именно -- 
+
+	// если же всё прошло без ошибок, то надо проверить одну животрепещущую ситуацию, а именно --
 	// не оказался ли игрок на переходе на след. уровень.
 	int x = game_map -> units_list[PLAYER_INDEX].x;
 	int y = game_map -> units_list[PLAYER_INDEX].y;
@@ -834,18 +836,18 @@ int move_player(GameMap *game_map, char dir)
 	// если мы попали не на клетку перехода -- то по барабану, на какую: возвращаем ОК
 	if (game_map -> data[y][x].type != FINISH_CELL)
 		return OK;
-	
+
 	// здесь мы, получается, встали на клетку перехода на следующий уровень
 	_next_level(game_map);
 	return OK;
-	
+
 };
 
 /******
-	@brief отвязывает юнита от клетки на карте 
+	@brief отвязывает юнита от клетки на карте
 	@param game_map карта, где происходит действие
 	@param ind индекс юнита в массиве units_list
-	@return код ошибки	
+	@return код ошибки
 */
 int _unbind_unit_from_cell(GameMap *game_map, int ind)
 {
@@ -871,12 +873,12 @@ int _unbind_unit_from_cell(GameMap *game_map, int ind)
 };
 
 /******
-	@brief привязывает юнита к клетке на карте 
+	@brief привязывает юнита к клетке на карте
 	@param game_map карта, где происходит действие
 	@param ind индекс юнита в массиве units_list
 	@param x координата по х клетки, к которой надо привязать юнита
 	@param y координата по y клетки, к которой надо привязать юнита
-	@return код ошибки	
+	@return код ошибки
 */
 int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 {
@@ -887,7 +889,7 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 	// проверяем, что клетка, куда привязываем юнита, пустая
 	if (game_map -> data[y][x].unit != NULL)
 		return CELL_IS_BUSY;
-	
+
 	// TODO: добавить проверку на некорректный индекс
 
 	// на всякий случай отвязываем юнита от той клетки, где он якобы стоит
@@ -895,8 +897,8 @@ int _bind_unit_to_cell(GameMap *game_map, int ind, int x, int y)
 
 	// и привязываем к указанной клетке
 	game_map -> data[y][x].unit = &(game_map -> units_list[ind]);
-	
-	
+
+
 	// и меняем юниту координаты
 	game_map -> units_list[ind].y = y;
 	game_map -> units_list[ind].x = x;
@@ -929,7 +931,7 @@ int _can_see_player(GameMap *game_map, int ind, char *ans)
 
 	// считаем расстояние между юнитом и игроком
 	float d = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-	
+
 	// если расстояние меньше, чем радиус, то 1, иначе 0
 	*ans = ((int)d < _RADIUS_OF_SIGHT);
 
@@ -950,10 +952,10 @@ int _index_is_correct(GameMap *game_map, int ind, char type)
 		max_val = game_map -> units_num;
 	else
 		max_val = game_map -> items_num;
-	
+
 	if (ind < 0 || ind >= max_val)
 		return 0;
-	
+
 	return 1;
 };
 
@@ -979,20 +981,20 @@ int move_monsters(GameMap *game_map)
 		// если юнит умер или не был выставлен -- в движении он не участвует
 		if (!_unit_on_map(game_map, game_map -> units_list + ind))
 			continue;
-		
-		char not_need_to_continue; 
+
+		char not_need_to_continue;
 		_can_see_player(game_map, ind, &not_need_to_continue);
 		if (!not_need_to_continue)
 			continue;
-		
+
 		// TODO: снести нахуй: это для тестов
 		//if (ind != 1)
 		//	continue;
 
 		//эхо-печать для тестов
 		//printf("двигается монстр номер %d\n", ind);
-		
-		
+
+
 		char direction = _cnt_direction_for_move(game_map, ind);
 		_move_unit(game_map, ind, direction);
 	};
@@ -1019,8 +1021,8 @@ _Direction;
 char _cnt_direction_for_move(GameMap *game_map, int ind)
 {
 	// сиё чудо работает на алгоритме BFS (поиск в ширину)
-	
-	// технический массив used для классической реализации BFS'a	
+
+	// технический массив used для классической реализации BFS'a
 	char **used;
 
 	// инициализируем used нулями
@@ -1033,8 +1035,8 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 	};
 
 	// клетки, по которым попытается пройти монстр (технический массив для классического BFS)
-	_Direction *dirs; 
-	int dirs_size;	// длина массива dirs, 
+	_Direction *dirs;
+	int dirs_size;	// длина массива dirs,
 	int real_size;	// реальная длина массива dirs (т.к. из-за особенностей
 	// языка С память будем выделять с некоторым запасом)
 	int now_elem;	// первый необработанный элемент в массиве dirs
@@ -1044,7 +1046,7 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 	real_size = 1;	// изначально такой элемент один: клетка, где стоит сам монстр
 	now_elem = 0;	// первый элемент -- и есть первый необработанный
 	dirs = malloc(sizeof(_Direction) * dirs_size);
-	
+
 	// клетка, где стоит сам монстр
 	dirs[now_elem].x = game_map -> units_list[ind].x; // координаты берём у монстра
 	dirs[now_elem].y = game_map -> units_list[ind].y;
@@ -1074,7 +1076,7 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 			// и на неё ещё не вставали
 			// и она в пределах просчитываемого радиуса движения
 			// и не упёрлись в стенку
-			if 
+			if
 			(
 			_coords_are_correct(game_map, x[i], y[i])
 			 &&
@@ -1109,7 +1111,7 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 	// эхо-печать
 	for (int i = 0; i < real_size; ++i)
 	{
-		printf("%d: (%d, %d) на расстоянии %d, пришли из %d\n", 
+		printf("%d: (%d, %d) на расстоянии %d, пришли из %d\n",
 			i,
 			dirs[i].x,
 			dirs[i].y,
@@ -1145,7 +1147,7 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 
 		// удаляем dirs
 		free(dirs);
-		
+
 		// монстр стоит на месте
 		return 's';
 	};
@@ -1153,12 +1155,12 @@ char _cnt_direction_for_move(GameMap *game_map, int ind)
 	// если игрок оказался в клетке, до которой монстр может дойти, -- прокладываем к нему путь путём анализа массива dirs
 	int now_cell = finish_cell;	// текущая клетка (идём как бы "с конца": от игрока к монстру)
 	int bef_cell = finish_cell;	// предыдущая клетка
-	
+
 	char ans = 's';	// направление, которое будем возвращать (на всякий случай инициализируем "стоять")
 
 	while (dirs[now_cell].bef != now_cell)	// пока не придём к клетке, где стоит монстр
 	{
-		now_cell = dirs[now_cell].bef;	// рассматриваем предыдущую клетку пути 
+		now_cell = dirs[now_cell].bef;	// рассматриваем предыдущую клетку пути
 		// и вычисляем, куда мы сместились относительно предыдущей клетки
 		if (dirs[now_cell].x < dirs[bef_cell].x)
 			ans = 'l';
@@ -1273,17 +1275,17 @@ int _next_level(GameMap *game_map)
 	printf("LOG OPENED\n");
 
 	// и заново всё пересчитываем для следующего уровня
-	
+
 	// сохраняем игрока во временную переменную
 	Unit tmp_player;
-	_copy_unit(game_map -> units_list + PLAYER_INDEX, &tmp_player); 
+	_copy_unit(game_map -> units_list + PLAYER_INDEX, &tmp_player);
 
 	delete_map(game_map);	// стираем карту
 
 	// и создаём новый уровень
 	init_map(game_map, next_level_settings);
 	generate_maps_landscape(game_map);
-	generate_maps_content(game_map);
+	generate_maps_content(game_map, tmp_player.name);
 
 	// загружаем игрока из временной переменной
 	_copy_unit(&tmp_player, game_map -> units_list + PLAYER_INDEX);
@@ -1311,7 +1313,7 @@ int game_is_finished(GameMap *game_map, char *is_finished)
 	// проверяем, что не дали неинициализированную карту
 	if (game_map -> data == NULL || game_map -> units_list == NULL || game_map -> items_list == NULL)
 		return MAP_ALREADY_DELETED;
-	
+
 	// предположим, что игра закончилась
 	*is_finished = 0;
 
@@ -1331,18 +1333,18 @@ int game_is_finished(GameMap *game_map, char *is_finished)
 };
 
 /*********
- * @brief создаёт копию юнита 
+ * @brief создаёт копию юнита
  * @param orig оригинал юнита
  * @param new_unit куда копировать
  * @return копия юнита
 */
 void _copy_unit(Unit *orig, Unit *new_unit)
 {
-	
+
 	// координаты мы ни в коем случае не копируем: они никак не зависят от того, где юнит закончил пред. уровенЬ!!
 	//new_unit -> x = orig -> x;
 	//new_unit -> y = orig -> y;
-	
+
 	new_unit -> miss_chance = orig -> miss_chance;
 	new_unit -> lvl = orig -> lvl;
 	new_unit -> kills = orig -> kills;
@@ -1354,7 +1356,7 @@ void _copy_unit(Unit *orig, Unit *new_unit)
 	new_unit -> inventory = orig -> inventory;
 
 	// предметы копируем с перевыделением памяти
-	new_unit -> inventory.items = malloc(sizeof(Item) * orig -> inventory.current_size);
+	new_unit->inventory.items = malloc(sizeof(Item) * orig->inventory.max_size);
 	for (int i = 0; i < orig -> inventory.current_size; ++i)
 		new_unit -> inventory.items[i] = orig -> inventory.items[i];
 

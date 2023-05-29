@@ -13,14 +13,13 @@
  * @brief структура настроек для генерации карты
  * @param size_x размер карты по оси оХ
  * @param size_y размер карты по оси оУ
-*/
+ */
 typedef struct
 {
-	int size_x;				// размер карты по оси oX
-	int size_y;				// размер карты по оси oY
-	int level;				// уровень (порядковый номер этажа, на котором находится игрок)
-}
-MapSettings;
+	int size_x; // размер карты по оси oX
+	int size_y; // размер карты по оси oY
+	int level;	// уровень (порядковый номер этажа, на котором находится игрок)
+} MapSettings;
 
 /**
  * @brief структура игровой карты
@@ -30,25 +29,25 @@ MapSettings;
  * @param data двумерный массив клеток, являющий собой карту
  * @param mobs_list список всех мобов, что есть на карте
  * @param items_list список всех предметов, что есть карте
-*/
+ */
 typedef struct
 {
-	int level;			// номер этажа
-	
-	int size_x;			// ширина карты
-	int size_y;			// высота карты
-	Cell **data; 		// двумерный массив клеток, являющий собой карту
-	
-	int units_num;		// кол-во мобов, что есть на карте
-	Unit *units_list;	// список всех мобов, что есть на карте
+	int level; // номер этажа
 
-	int items_num;		// кол-во предметов, что есть на карте
-	Item *items_list;	// список всех предметов
+	int size_x;	 // ширина карты
+	int size_y;	 // высота карты
+	Cell **data; // двумерный массив клеток, являющий собой карту
+
+	int units_num;	  // кол-во мобов, что есть на карте
+	Unit *units_list; // список всех мобов, что есть на карте
+
+	int items_num;	  // кол-во предметов, что есть на карте
+	Item *items_list; // список всех предметов
 } GameMap;
 
 // переменные и константы
-extern int PLAYER_INDEX;  // индекс, под которым в массиве units_list расположен игрок. 
-extern const int MAX_LEVEL;	// кол-во уровней в игре
+extern int PLAYER_INDEX;	// индекс, под которым в массиве units_list расположен игрок.
+extern const int MAX_LEVEL; // кол-во уровней в игре
 
 // функции
 
@@ -64,7 +63,7 @@ int generate_maps_landscape(GameMap *game_map);
  * @param game_map игровая карта (с готовым ландшафтом)
  * @return код ошибки
  */
-int generate_maps_content(GameMap *game_map);
+int generate_maps_content(GameMap *game_map, char *player_name);
 
 /**
  * @brief проверяет, окончилась ли игра на игровой карте
@@ -79,7 +78,7 @@ int game_is_finished(GameMap *game_map, char *is_finished);
  * @param game_map игровая карта
  * @return код ошибки
  */
-GameMap* get_map_state(GameMap *game_map);
+GameMap *get_map_state(GameMap *game_map);
 
 /**
  * @brief копирует одну игровую карту в другую
@@ -101,7 +100,7 @@ int init_map(GameMap *game_map, MapSettings settings);
  * @brief чистит память, которую занимает карта
  * @param game_map указатель на игровую карту, за которой надо почистить память
  * @return код ошибки
-*/
+ */
 int delete_map(GameMap *game_map);
 
 /***

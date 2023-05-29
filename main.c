@@ -22,12 +22,12 @@ int main()
 
     char game_mode = 'g';    // g = game, i = inventory
 
-    GameMap game_map;   
-    
+    GameMap game_map;
+
     game_map.units_list = NULL;
     game_map.items_list = NULL;
     game_map.data = NULL;
-    
+
     MapSettings settings;
 
     settings.size_x = 20;
@@ -42,7 +42,7 @@ int main()
         printf("ERROR: %d", err_code);
         return 1;
     }
-    err_code = generate_maps_content(&game_map);
+    err_code = generate_maps_content(&game_map, "chmo");
 
     int game_is_finished = false;
     for (; !game_is_finished ;)
@@ -118,7 +118,7 @@ int main()
             move_monsters(&game_map);
         //printf("monster was moved\n");
     };
-    
+
     err_code = delete_map(&game_map);
     //printf("%d\n", err_code);
 };
