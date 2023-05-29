@@ -12,7 +12,7 @@ ExceptionStatus _generate_consumable(Item *item, int level)
     else
         effect->type = HEAL;
 
-    effect->scale = level;
+    effect->scale = level + rand() % level;
 
     effects.effect_list = effect;
     effects.effects_number = 1;
@@ -33,30 +33,35 @@ ExceptionStatus _generate_equipable(Item *item, int level)
     if (item->type == HEAD)
     {
         item->name = "Helmet";
-        effect->type = HP_UP;
+        effect->type = DEFENSE_UP;
+        effect->scale = level + rand() % level;
     }
     if (item->type == BODY)
     {
         item->name = "Chestplate";
         effect->type = DEFENSE_UP;
+        effect->scale = level + rand() % level;
     }
     if (item->type == LEFT_HAND)
     {
         item->name = "Shield";
         effect->type = DEFENSE_UP;
+        effect->scale = level + (rand() % level) / 2;
     }
     if (item->type == RIGHT_HAND)
     {
         item->name = "Sword";
         effect->type = DMG_UP;
+        effect->scale = level + rand() % level;
     }
     if (item->type == LEGS)
     {
         item->name = "Leggings";
-        effect->type = HP_UP;
+        effect->type = DEFENSE_UP;
+        effect->scale = level - rand() % level;
     }
 
-    effect->scale = level;
+    // effect->scale = level + rand() % level;
 
     effects.effect_list = effect;
     effects.effects_number = 1;
@@ -76,7 +81,6 @@ ExceptionStatus _generate_item(Item *item, int level)
     return OK;
 }
 
-
 ExceptionStatus generate_loot(Item *items, int size, int level)
 {
     if (size <= 0)
@@ -87,7 +91,7 @@ ExceptionStatus generate_loot(Item *items, int size, int level)
 
     for (int i = 0; i < size; i++)
     {
-            _generate_item(&items[i], level);
+        _generate_item(&items[i], level);
     }
 
     return OK;
