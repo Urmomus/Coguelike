@@ -2,6 +2,7 @@
 #include <curses.h>
 #include <unistd.h>
 #include <math.h>
+#include <string.h>
 
 char free_cell = '.';
 char wall_cell = '#';
@@ -47,6 +48,10 @@ void print_map(GameMap *game_map)
     clear();
     char cell;
     ColorPair cell_color;
+
+    attron(COLOR_PAIR(SHOW_NAME_PAIR));
+    printw("Level: %d\n", game_map->level);
+    attron(COLOR_PAIR(SHOW_NAME_PAIR));
 
     for (int y = 0; y < game_map->size_y; ++y)
     {
@@ -173,53 +178,121 @@ void print_inventory(GameMap *game_map, int selected_item_index)
     }
 };
 
-void print_death_screen()
+void enter_name()
+{
+    int row, col;
+    getmaxyx(stdscr, row, col);
+    mvprintw(row / 2, (col - 60) / 2, "Enter name: ");
+}
+
+void show_input()
+{
+    echo();
+    curs_set(1);
+}
+
+void hide_input()
+{
+    noecho();
+    curs_set(0);
+}
+
+void print_death_screen(GameMap *game_map)
 {
     clear();
     attron(COLOR_PAIR(DEATH_SCREEN_PAIR));
-    printw(
-"\n\n\n\n\n"
-"                    _.---,._,'\n"
-"               /' _.--.<\n"
-"                 /'     `'\n"
-"               /' _.---._____\n"
-"               \\.'   ___, .-'`\n"
-"                   /'    \\\\             .\n"
-"                 /'       `-.          -|-\n"
-"                |                       |\n"
-"                |                   .-'~~~`-.\n"
-"                |                 .'         `.\n"
-"                |                 |  R  I  P  |\n"
-"                |                 |           |\n"
-"                |                 |           |\n"
-"                 \\              \\\\|           |//\n"
-"           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
-    );
+    int row, col;
+    getmaxyx(stdscr, row, col);
+    mvprintw((row - 15) / 2, (col - 58) / 2,
+             "         _.---,._,'");
+    mvprintw((row - 15) / 2 + 1, (col - 58) / 2,
+
+             "    /' _.--.<");
+    mvprintw((row - 15) / 2 + 2, (col - 58) / 2,
+
+             "      /'     `'");
+    mvprintw((row - 15) / 2 + 3, (col - 58) / 2,
+
+             "    /' _.---._____");
+    mvprintw((row - 15) / 2 + 4, (col - 58) / 2,
+
+             "    \\.'   ___, .-'`");
+    mvprintw((row - 15) / 2 + 5, (col - 58) / 2,
+
+             "        /'    \\\\             .");
+    mvprintw((row - 15) / 2 + 6, (col - 58) / 2,
+
+             "      /'       `-.          -|-");
+    mvprintw((row - 15) / 2 + 7, (col - 58) / 2,
+
+             "     |                       |");
+    mvprintw((row - 15) / 2 + 8, (col - 58) / 2,
+
+             "     |                   .-'~~~`-.");
+    mvprintw((row - 15) / 2 + 9, (col - 58) / 2,
+
+             "     |                 .'         `.");
+    mvprintw((row - 15) / 2 + 10, (col - 58) / 2,
+
+             "     |                 |  R  I  P  |");
+    mvprintw((row - 15) / 2 + 11, (col - 58) / 2,
+
+             "     |                 |           |");
+    mvprintw((row - 15) / 2 + 12, (col - 58) / 2,
+
+             "     |                 |           |");
+    mvprintw((row - 15) / 2 + 13, (col - 58) / 2,
+
+             "      \\              \\\\|           |//");
+    mvprintw((row - 15) / 2 + 14, (col - 58) / 2,
+
+             "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
     attroff(COLOR_PAIR(DEATH_SCREEN_PAIR));
+    mvprintw((row + 16) / 2, (col - (16 + strlen(game_map->units_list[PLAYER_INDEX].name))) / 2, "%s died on level %d", game_map->units_list[PLAYER_INDEX].name, game_map->level);
+    mvprintw((row + 18) / 2, (col - 27) / 2, "Press any button to continue\n");
 }
 
-void print_win_screen()
+void print_win_screen(GameMap *game_map)
 {
     clear();
+    int row, col;
+    getmaxyx(stdscr, row, col);
     attron(COLOR_PAIR(WIN_SCREEN_PAIR));
-    printw(
-"\n\n\n\n\n"
-"                               ____...------------...____\n"
-"                          _.-\"` /o/__ ____ __ __  __ \\o\\_`\"-._\n"
-"                        .'     / /                    \\ \\     '.\n"
-"                        |=====/o/======================\\o\\=====|\n"
-"                        |____/_/________..____..________\\_\\____|\n"
-"                        /   _/ \\_     <_o#\\__/#o_>     _/ \\_   \\\n"
-"                        \\_________\\####/_________/\n"
-"                         |===\\!/========================\\!/===|\n"
-"                         |   |=|          .---.         |=|   |\n"
-"                         |===|o|=========/     \\========|o|===|\n"
-"                         |   | |         \\() ()/        | |   |\n"
-"                         |===|o|======{'-.) A (.-'}=====|o|===|\n"
-"                         | __/ \\__     '-.\\uuu/.-'    __/ \\__ |\n"
-"                         |==== .'.'^'.'.====|\n"
-"                         |  _\\o/   __  {.' __  '.} _   _\\o/  _|\n"
-"                         `\"\"\"\"-\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"-\"\"\"\"`\n"
-    );
+    mvprintw((row - 16) / 2 + 1, (col - 42) / 2,
+             "       ____...------------...____");
+    mvprintw((row - 16) / 2 + 2, (col - 42) / 2,
+             "  _.-\"` /o/__ ____ __ __  __ \\o\\_`\"-._");
+    mvprintw((row - 16) / 2 + 3, (col - 42) / 2,
+             ".'     / /                    \\ \\     '.");
+    mvprintw((row - 16) / 2 + 4, (col - 42) / 2,
+             "|=====/o/======================\\o\\=====|");
+    mvprintw((row - 16) / 2 + 5, (col - 42) / 2,
+             "|____/_/________..____..________\\_\\____|");
+    mvprintw((row - 16) / 2 + 6, (col - 42) / 2,
+             "/   _/ \\_     <_o#\\__/#o_>     _/ \\_   \\");
+    mvprintw((row - 16) / 2 + 7, (col - 42) / 2,
+             "\\________________\\####/________________/");
+    mvprintw((row - 16) / 2 + 8, (col - 42) / 2,
+             " |===\\!/========================\\!/===|");
+    mvprintw((row - 16) / 2 + 9, (col - 42) / 2,
+             " |   |=|          .---.         |=|   |");
+    mvprintw((row - 16) / 2 + 10, (col - 42) / 2,
+             " |===|o|=========/     \\========|o|===|");
+    mvprintw((row - 16) / 2 + 11, (col - 42) / 2,
+             " |   | |         \\() ()/        | |   |");
+    mvprintw((row - 16) / 2 + 12, (col - 42) / 2,
+             " |===|o|======{'-.) A (.-'}=====|o|===|");
+    mvprintw((row - 16) / 2 + 13, (col - 42) / 2,
+             " | __/ \\__     '-.\\uuu/.-'    __/ \\__ |");
+    mvprintw((row - 16) / 2 + 14, (col - 42) / 2,
+             " |==============.'.'^'.'.==============|");
+    mvprintw((row - 16) / 2 + 15, (col - 42) / 2,
+             " |  _\\o/   __  {.' __  '.} _   _\\o/  _|");
+    mvprintw((row - 16) / 2 + 16, (col - 42) / 2,
+             " `\"\"\"\"-\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"\"-\"\"\"\"`\n");
     attroff(COLOR_PAIR(WIN_SCREEN_PAIR));
+
+    mvprintw((row + 18) / 2, (col - (21 + strlen(game_map->units_list[PLAYER_INDEX].name))) / 2, "%s completed all levels", game_map->units_list[PLAYER_INDEX].name);
+    mvprintw((row + 18) / 2 + 1, (col - 22) / 2, "You killed %d monsters\n", game_map->units_list[PLAYER_INDEX].kills);
+    mvprintw((row + 18) / 2 + 2, (col - 28) / 2, "Press any button to continue\n");
 }

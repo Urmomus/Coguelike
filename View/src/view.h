@@ -2,8 +2,11 @@
 #include <ncurses.h>
 
 void init_ncurses();
-void print_death_screen();
-void print_win_screen();
+void print_death_screen(GameMap *game_map);
+void print_win_screen(GameMap *game_map);
+void enter_name();
+void show_input();
+void hide_input();
 void print_inventory(GameMap *game_map, int selected_item_index);
 void print_map(GameMap *game_map);
 

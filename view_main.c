@@ -2,16 +2,19 @@
 #include "view.h"
 #include <stdlib.h>
 #include <ncurses.h>
+#include <time.h>
+#include <string.h>
 
 void print_map(GameMap *game_map);
 
 int main()
 {
-    srand(3);
+    srand(time(0));
     init_ncurses();
 
     int selected_item_index = 0;
     char game_mode = 'g'; // g = game, i = inventory
+    char player_name[20];
 
     GameMap game_map;
 
@@ -27,11 +30,31 @@ int main()
 
     int err_code = init_map(&game_map, settings);
     err_code = generate_maps_landscape(&game_map);
-    err_code = generate_maps_content(&game_map);
+
+    show_input();
+    enter_name();
+    attron(COLOR_PAIR(SHOW_NAME_PAIR));
+    getstr(player_name);
+    attron(COLOR_PAIR(SHOW_NAME_PAIR));
+    hide_input();
+
+    err_code = generate_maps_content(&game_map, player_name);
+
+    if (strcmp(player_name, "gamemode0") == 0)
+    {
+        game_map.units_list[PLAYER_INDEX].hp = 999;
+        game_map.units_list[PLAYER_INDEX].dmg = 999;
+        game_map.units_list[PLAYER_INDEX].defense = 999;
+    }
 
     int game_is_finished = false;
     do
     {
+        if (game_map.level == 11)
+        {
+            game_is_finished = true;
+            break;
+        }
         if (game_map.units_list[PLAYER_INDEX].hp <= 0)
         {
             game_is_finished = true;
@@ -92,6 +115,12 @@ int main()
                     --selected_item_index;
                 break;
             };
+            case 'd':
+            {
+                selected_item_index = game_map.units_list[PLAYER_INDEX].inventory.current_size - 1;
+                if (selected_item_index < 0)
+                    selected_item_index = 0;
+            };
             default:
             {
                 continue;
@@ -129,24 +158,23 @@ int main()
                 break;
             };
             default:
-                {
-                    continue;
-                };
+            {
+                continue;
+            };
             };
 
             move_monsters(&game_map);
         }
-    }
-    while (!game_is_finished);
+    } while (!game_is_finished);
 
     if (game_map.units_list[PLAYER_INDEX].hp <= 0)
     {
-        print_death_screen();
+        print_death_screen(&game_map);
         getch();
     }
     else
     {
-        print_win_screen();
+        print_win_screen(&game_map);
         getch();
     }
 
