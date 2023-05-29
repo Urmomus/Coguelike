@@ -1,6 +1,6 @@
 all: buildView
-	gcc -I ./enemy_system/src -I ./Map/src -I ./View/src view_main.c -lMap -lEnemySystem -lView \
-	-L./Map/ -L./enemy_system/ -L./View/ -lncurses -lm -o ./bin/view_main
+	gcc -I ./enemy_system/src -I ./Map/src -I ./View/src -I ./saving_system/src view_main.c -lMap -lEnemySystem -lView -lSavingSystem \
+	-L./Map/ -L./enemy_system/ -L./View/ -L./saving_system/ -lncurses -lm -o ./bin/view_main
 
 # runTests: buildLibs
 # 	make -f TestMakefile

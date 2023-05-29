@@ -1,9 +1,13 @@
 #include "Map.h"
+#include "SavingSystem.h"
 #include <ncurses.h>
 
 void init_ncurses();
 void print_death_screen(GameMap *game_map);
 void print_win_screen(GameMap *game_map);
+void show_menu(int selected);
+void save_to_leaderboard(Unit *player);
+void print_leaderboard();
 void enter_name();
 void show_input();
 void hide_input();

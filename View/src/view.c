@@ -16,6 +16,8 @@ char portal_cell = '@';
 
 int VISIBLE_INVENTORY_SIZE = 5;
 
+char *FILENAME = "./data/stat.txt";
+
 void init_ncurses()
 {
     initscr();
@@ -180,6 +182,7 @@ void print_inventory(GameMap *game_map, int selected_item_index)
 
 void enter_name()
 {
+    clear();
     int row, col;
     getmaxyx(stdscr, row, col);
     mvprintw(row / 2, (col - 60) / 2, "Enter name: ");
@@ -295,4 +298,73 @@ void print_win_screen(GameMap *game_map)
     mvprintw((row + 18) / 2, (col - (21 + strlen(game_map->units_list[PLAYER_INDEX].name))) / 2, "%s completed all levels", game_map->units_list[PLAYER_INDEX].name);
     mvprintw((row + 18) / 2 + 1, (col - 22) / 2, "You killed %d monsters\n", game_map->units_list[PLAYER_INDEX].kills);
     mvprintw((row + 18) / 2 + 2, (col - 28) / 2, "Press any button to continue\n");
+}
+
+void show_menu(int selected)
+{
+    clear();
+    int row, col;
+    getmaxyx(stdscr, row, col);
+
+    mvprintw((row - 8) / 2, (col - 49) / 2,
+"  ,- _~.                         ,,    ,,        ");
+    mvprintw((row - 8) / 2 + 2, (col - 49) / 2,
+
+" (' /|           _               ||  ' ||        ");
+    mvprintw((row - 8) / 2 + 3, (col - 49) / 2,
+
+"((  ||    /'\\\\  / \\\\ \\\\ \\\\  _-_  || \\\\ ||/\\  _-_ ");
+    mvprintw((row - 8) / 2 + 4, (col - 49) / 2,
+
+"((  ||   || || || || || || || \\\\ || || ||_< || \\\\");
+    mvprintw((row - 8) / 2 + 5, (col - 49) / 2,
+
+" ( / |   || || || || || || ||/   || || || | ||/  ");
+    mvprintw((row - 8) / 2 + 6, (col - 49) / 2,
+
+"  -____- \\\\,/  \\\\_-| \\\\/\\\\ \\\\,/  \\\\ \\\\ \\\\,\\ \\\\,/ ");
+    mvprintw((row - 8) / 2 + 7, (col - 49) / 2,
+
+"                /  \\                             ");
+    mvprintw((row - 8) / 2 + 8, (col - 49) / 2,
+
+"               '----`                            ");
+
+    char *fields[] = {"start game", "show_leaderboard"};
+
+    for (int i = 0; i < 2; ++i)
+    {
+        if (selected == i)
+        {
+            attron(COLOR_PAIR(SHOW_NAME_PAIR));
+            mvprintw((row - 8) / 2 + 10 + i, (col - strlen(fields[i])) / 2 - 2, ">");
+        }
+        mvprintw((row - 8) / 2 + 10 + i, (col - strlen(fields[i])) / 2, "%s", fields[i]);
+        if (selected == i)
+            attroff(COLOR_PAIR(SHOW_NAME_PAIR));
+    }
+}
+
+void print_leaderboard()
+{
+    int SIZE = 5;
+    clear();
+    printw("Leaderboard\n");
+    TableOfLeaders table;
+    load_table_from_file(&table, FILENAME);
+
+    for (int i = 0; i < fmin(table.num_of_leaders, SIZE); ++i)
+    {
+        attron(COLOR_PAIR(SHOW_NAME_PAIR));
+        printw("%s\n", table.data[i].name);
+        attroff(COLOR_PAIR(SHOW_NAME_PAIR));
+        printw("kills: %d\nlevel: %d\nitems collected: %d\n\n", table.data[i].kills, table.data[i].level, table.data[i].items_num);
+    }
+}
+
+void save_to_leaderboard(Unit *player)
+{
+    TableOfLeaders table;
+    load_table_from_file(&table, FILENAME);
+    add_player_to_table(&table, player);
 }

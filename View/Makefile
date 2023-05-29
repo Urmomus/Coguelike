@@ -12,7 +12,7 @@ ${TARGET}: ${OBJ}
 	ar r ${TARGET}.a ${OBJ}
 
 ${PREF_OBJ}%.o: ${PREF_SRC}%.c
-	${CC} -c -I../enemy_system/src/ -I../Map/src $< -o $@
+	${CC} -c -I../enemy_system/src/ -I../saving_system/src -I../Map/src $< -o $@
 
 clean:
 	rm ${TARGET} ${OBJ}
