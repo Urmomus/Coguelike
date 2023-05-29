@@ -1,6 +1,6 @@
 all: buildLibs
 	gcc -I ./enemy_system/src -I ./Map/src main.c -lMap -lEnemySystem \
-	-L./Map/ -L./enemy_system/ -lm -o ./bin/main
+	-L./Map/ -L./enemy_system/ -L./saving_system/ -I./saving_system/src/ -lSavingSystem -lm -o ./bin/main
 
 # runTests: buildLibs
 # 	make -f TestMakefile

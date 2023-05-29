@@ -1,5 +1,6 @@
 #include "units.h"
 #include "Map.h"
+#include "SavingSystem.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -18,6 +19,24 @@ void print_inventory(GameMap *game_map);
 
 int main()
 {
+    TableOfLiders table;
+    load_table_from_file(&table, "../data/stat.txt");
+
+    Unit player;
+    player.inventory.current_size = 11;
+    player.kills = 666;
+    player.name = "LETOV";
+    player.lvl = 80;
+    add_player_to_table(&table, &player);
+
+    for (int i = 0; i < table.num_of_liders; ++i)
+    {
+        printf("%s, %d, %d, %d\n", table.data[i].name,
+        table.data[i].kills, table.data[i].level, table.data[i].items_num);
+    };
+    save_table_to_file(&table, "../data/stat.txt");
+    delete_table(&table);
+    /*
     srand(6);
 
     char game_mode = 'g';    // g = game, i = inventory
@@ -121,6 +140,7 @@ int main()
 
     err_code = delete_map(&game_map);
     //printf("%d\n", err_code);
+    */
 };
 
 void print_map(GameMap *game_map)

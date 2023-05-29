@@ -11,6 +11,22 @@
 */
 int save_table_to_file(TableOfLeaders *table, char *filename)
 {
+	// открываем файл со статистикой
+	FILE *f_out = fopen(filename, "w");
+
+	// сначала сохраняем кол-во чемпионов
+	fprintf(f_out, "%d\n", table -> num_of_liders);
+	// а потом -- всех их подряд
+	for (int i = 0; i < table -> num_of_liders; ++i)
+	{
+		fprintf(f_out, "%s\n", table -> data[i].name);
+		fprintf(f_out, "%d\n", table -> data[i].kills);
+		fprintf(f_out, "%d\n", table -> data[i].level);
+		fprintf(f_out, "%d\n", table -> data[i].items_num);
+	};
+
+	// закрываем файл со статистикой
+	fclose(f_out);
 };
 
 /*****
@@ -21,9 +37,28 @@ int save_table_to_file(TableOfLeaders *table, char *filename)
 */
 int load_table_from_file(TableOfLeaders *table, char *filename)
 {
+	// открываем файл со статистикой
 	FILE *f_in = fopen(filename, "r");
 
-	fclose();
+	// считываем кол-во игроков в таблице и выделяем память
+	fscanf(f_in, "%d", &table -> num_of_liders);
+	table -> data = malloc(sizeof(Lider) * table -> num_of_liders);
+
+	for (int i = 0; i < table -> num_of_liders; ++i)
+	{
+		char tmp[256];
+		fscanf(f_in, "%s", tmp);
+
+		table -> data[i].name = malloc(strlen(tmp) * sizeof(char));
+		strcpy(table -> data[i].name, tmp);
+		fscanf(f_in, "%d", &table -> data[i].kills);
+		fscanf(f_in, "%d", &table -> data[i].level);
+		fscanf(f_in, "%d", &table -> data[i].items_num);
+	};
+
+	// закрываем файл со статистикой
+	fclose(f_in);
+	return 0;
 };
 
 /*****
@@ -33,7 +68,11 @@ int load_table_from_file(TableOfLeaders *table, char *filename)
 */
 int delete_table(TableOfLeaders *table)
 {
-
+	for (int i = 0; i < table -> num_of_liders; ++i)
+		free(table -> data[i].name);
+	free(table -> data);
+	table -> data = NULL;
+	return 0;
 };
 
 /******
@@ -44,5 +83,16 @@ int delete_table(TableOfLeaders *table)
 */
 int add_player_to_table(TableOfLeaders *table, Unit *player)
 {
+	table -> num_of_liders += 1;	// увеличиваем кол-во игроков в таблице на одного
+	table -> data = realloc(table -> data, table -> num_of_liders * sizeof(Lider));	// перевыделяем память
+	int last = table -> num_of_liders - 1;	// получаем индекс, где хранится последний игрок
 
+	// добавляем игрока в таблицу, причём последним
+	table -> data[last].kills = player -> kills;
+	table -> data[last].level= player -> lvl;
+	table -> data[last].items_num = player -> inventory.current_size;
+	table -> data[last].name = malloc(sizeof(char) * strlen(player -> name));
+	strcpy(table -> data[last].name, player -> name);
+
+	return 0;
 };
