@@ -19,7 +19,7 @@ void print_inventory(GameMap *game_map);
 
 int main()
 {
-    TableOfLiders table;
+    TableOfLeaders table;
     load_table_from_file(&table, "../data/stat.txt");
 
     Unit player;
@@ -29,7 +29,7 @@ int main()
     player.lvl = 80;
     add_player_to_table(&table, &player);
 
-    for (int i = 0; i < table.num_of_liders; ++i)
+    for (int i = 0; i < table.num_of_leaders; ++i)
     {
         printf("%s, %d, %d, %d\n", table.data[i].name,
         table.data[i].kills, table.data[i].level, table.data[i].items_num);

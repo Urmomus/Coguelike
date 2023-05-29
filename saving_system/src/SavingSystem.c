@@ -15,9 +15,9 @@ int save_table_to_file(TableOfLeaders *table, char *filename)
 	FILE *f_out = fopen(filename, "w");
 
 	// сначала сохраняем кол-во чемпионов
-	fprintf(f_out, "%d\n", table -> num_of_liders);
+	fprintf(f_out, "%d\n", table -> num_of_leaders);
 	// а потом -- всех их подряд
-	for (int i = 0; i < table -> num_of_liders; ++i)
+	for (int i = 0; i < table -> num_of_leaders; ++i)
 	{
 		fprintf(f_out, "%s\n", table -> data[i].name);
 		fprintf(f_out, "%d\n", table -> data[i].kills);
@@ -41,10 +41,10 @@ int load_table_from_file(TableOfLeaders *table, char *filename)
 	FILE *f_in = fopen(filename, "r");
 
 	// считываем кол-во игроков в таблице и выделяем память
-	fscanf(f_in, "%d", &table -> num_of_liders);
-	table -> data = malloc(sizeof(Lider) * table -> num_of_liders);
+	fscanf(f_in, "%d", &table -> num_of_leaders);
+	table -> data = malloc(sizeof(Leader) * table -> num_of_leaders);
 
-	for (int i = 0; i < table -> num_of_liders; ++i)
+	for (int i = 0; i < table -> num_of_leaders; ++i)
 	{
 		char tmp[256];
 		fscanf(f_in, "%s", tmp);
@@ -68,7 +68,7 @@ int load_table_from_file(TableOfLeaders *table, char *filename)
 */
 int delete_table(TableOfLeaders *table)
 {
-	for (int i = 0; i < table -> num_of_liders; ++i)
+	for (int i = 0; i < table -> num_of_leaders; ++i)
 		free(table -> data[i].name);
 	free(table -> data);
 	table -> data = NULL;
@@ -83,9 +83,9 @@ int delete_table(TableOfLeaders *table)
 */
 int add_player_to_table(TableOfLeaders *table, Unit *player)
 {
-	table -> num_of_liders += 1;	// увеличиваем кол-во игроков в таблице на одного
-	table -> data = realloc(table -> data, table -> num_of_liders * sizeof(Lider));	// перевыделяем память
-	int last = table -> num_of_liders - 1;	// получаем индекс, где хранится последний игрок
+	table -> num_of_leaders += 1;	// увеличиваем кол-во игроков в таблице на одного
+	table -> data = realloc(table -> data, table -> num_of_leaders * sizeof(Leader));	// перевыделяем память
+	int last = table -> num_of_leaders - 1;	// получаем индекс, где хранится последний игрок
 
 	// добавляем игрока в таблицу, причём последним
 	table -> data[last].kills = player -> kills;
