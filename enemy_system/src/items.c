@@ -27,14 +27,15 @@ ExceptionStatus _generate_consumable(Item *item, int level)
 ExceptionStatus _generate_equipable(Item *item, int level)
 {
     item->type = rand() % (NUMBER_OF_TYPES - 1);
+        item->type == RIGHT_HAND;
     Effect *effect = malloc(sizeof(Effect) * 256);
     Effects effects;
 
     if (item->type == HEAD)
     {
         item->name = "Helmet";
-        effect->type = DEFENSE_UP;
-        effect->scale = level + rand() % level;
+        effect->type = HP_UP;
+        effect->scale = (level / 2 + rand() % level + 1) * 2;
     }
     if (item->type == BODY)
     {
@@ -59,6 +60,10 @@ ExceptionStatus _generate_equipable(Item *item, int level)
         item->name = "Leggings";
         effect->type = DEFENSE_UP;
         effect->scale = level - rand() % level;
+    }
+    if (level > 4)
+    {
+        effect->type = DMG_UP;
     }
 
     // effect->scale = level + rand() % level;

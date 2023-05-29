@@ -331,6 +331,9 @@ int init_map(GameMap *game_map, MapSettings settings)
 	game_map -> units_num = game_map -> level * MONSTER_COEFF + 2 + 1;
 	game_map -> items_num = game_map -> level * ITEM_COEFF + 5;
 
+	if (game_map->level >= 5)
+		game_map -> units_num = 5 * MONSTER_COEFF + 2 + 1;
+
 	// выделяем память под предметы
 	game_map -> items_list = malloc(sizeof(Item) * game_map -> items_num);
 
