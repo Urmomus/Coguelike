@@ -367,4 +367,6 @@ void save_to_leaderboard(Unit *player)
     TableOfLeaders table;
     load_table_from_file(&table, FILENAME);
     add_player_to_table(&table, player);
+    save_table_to_file(&table, FILENAME);
+
 }
