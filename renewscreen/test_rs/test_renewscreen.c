@@ -1,4 +1,4 @@
-#include "/mnt/c/Users/Momeiko/Documents/GitHub/Coguelike/renewscreen/renewscreen/renewscreen.h"
+#include "renewscreen.h"
 #include "test_renewscreen.h"
 
 /***********
@@ -8,16 +8,30 @@
 
 int test_renewscreen(int do_change)
 {
-    int error_code = renewscreen (do_change);
+    int error_code = renew_screen(do_change);
 
     if (error_code == 1)
-        return 0;
+        
+        return 1;
+
+    {
+
 
     if (error_code == 0)
+    
+    
     {
-        return 1;
+
+
+        return 0;
+    
+    
     }
 
     return 0;
 
+
+    }
+
+    
 }
